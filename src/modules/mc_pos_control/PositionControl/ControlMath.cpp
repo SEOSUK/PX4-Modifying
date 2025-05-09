@@ -50,6 +50,17 @@ void thrustToAttitude(const Vector3f &thr_sp, const float yaw_sp, vehicle_attitu
 	att_sp.thrust_body[2] = -thr_sp.length();
 }
 
+void setAttitude(float yaw_sp,vehicle_attitude_setpoint_s &att_sp, Vector4f &manual_input)
+{
+	Eulerf euler_sp(0.3f*manual_input(0), 0.3f*manual_input(1), yaw_sp); // roll=0, pitch=0, yaw=yaw_sp
+	Quatf q_sp(euler_sp);
+	q_sp.copyTo(att_sp.q_d);
+
+	att_sp.roll_body  = 0.3f*manual_input(0);//0.f;
+	att_sp.pitch_body = 0.3f*manual_input(1);//0.f;
+	att_sp.yaw_body   = yaw_sp;
+}
+
 void limitTilt(Vector3f &body_unit, const Vector3f &world_unit, const float max_angle)
 {
 	// determine tilt

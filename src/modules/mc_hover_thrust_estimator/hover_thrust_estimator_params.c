@@ -124,9 +124,9 @@ PARAM_DEFINE_FLOAT(HTE_VZ_THR, 2.0);
  * affect the required hover thrust strongly (e.g. differently sized payloads).
  *
  * @decimal 2
- * @min 0.01
- * @max 0.4
+ * @min 1.0
+ * @max 20.0
  * @unit normalized_thrust
  * @group Hover Thrust Estimator
  */
-PARAM_DEFINE_FLOAT(HTE_THR_RANGE, 0.2);
+PARAM_DEFINE_FLOAT(HTE_THR_RANGE, 8.0);

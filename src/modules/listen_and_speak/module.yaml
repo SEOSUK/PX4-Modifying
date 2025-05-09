@@ -1,0 +1,5 @@
+# PX4 Module Configuration
+name: listen_and_speak
+type: module
+description: listen and speak module for PX4 and ROS2
+maintainer: your_email@example.com

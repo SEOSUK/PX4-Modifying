@@ -41,7 +41,7 @@
  * @increment 1
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_ACC_UP_MAX, 4.f);
+PARAM_DEFINE_FLOAT(MPC_ACC_UP_MAX, 15.f); // 4.f
 
 /**
  * Maximum downwards acceleration in climb rate controlled modes
@@ -53,7 +53,7 @@ PARAM_DEFINE_FLOAT(MPC_ACC_UP_MAX, 4.f);
  * @increment 1
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_ACC_DOWN_MAX, 3.f);
+PARAM_DEFINE_FLOAT(MPC_ACC_DOWN_MAX, 15.f); // 3.f
 
 /**
  * Manual yaw rate input filter time constant

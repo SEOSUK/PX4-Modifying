@@ -53,6 +53,8 @@ namespace ControlMath
  */
 void thrustToAttitude(const matrix::Vector3f &thr_sp, const float yaw_sp, vehicle_attitude_setpoint_s &att_sp);
 
+void setAttitude(float yaw_sp, vehicle_attitude_setpoint_s &att_sp, matrix::Vector4f &manual_input); // for fully actuation motion
+
 /**
  * Limits the tilt angle between two unit vectors
  * @param body_unit unit vector that will get adjusted if angle is too big

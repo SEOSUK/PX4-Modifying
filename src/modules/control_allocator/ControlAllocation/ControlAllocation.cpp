@@ -43,9 +43,9 @@
 
 ControlAllocation::ControlAllocation()
 {
-	_control_allocation_scale.setAll(1.f);
-	_actuator_min.setAll(0.f);
-	_actuator_max.setAll(1.f);
+	//_control_allocation_scale.setAll(1.f);
+	_actuator_min.setAll(0.f);//(0.f);
+	_actuator_max.setAll(55.f);//(1.f);
 }
 
 void

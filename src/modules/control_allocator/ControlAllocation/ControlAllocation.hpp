@@ -239,6 +239,7 @@ protected:
 	matrix::Vector<float, NUM_ACTUATORS> _actuator_slew_rate_limit; 	///< Slew rate limit
 	matrix::Vector<float, NUM_ACTUATORS> _prev_actuator_sp;  	///< Previous actuator setpoint
 	matrix::Vector<float, NUM_ACTUATORS> _actuator_sp;  	///< Actuator setpoint
+	matrix::Vector<float, NUM_ACTUATORS> _force_sp;			///<non scaled actuator setpoint custom
 	matrix::Vector<float, NUM_AXES> _control_sp;   		///< Control setpoint
 	matrix::Vector<float, NUM_AXES> _control_trim; 		///< Control at trim actuator values
 	int _num_actuators{0};

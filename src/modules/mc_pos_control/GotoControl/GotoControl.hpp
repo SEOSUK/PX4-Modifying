@@ -52,6 +52,7 @@
 #include <uORB/topics/goto_setpoint.h>
 #include <uORB/topics/trajectory_setpoint.h>
 #include <uORB/topics/vehicle_constraints.h>
+#include <uORB/topics/manual_control_setpoint.h>
 
 class GotoControl
 {
@@ -85,7 +86,7 @@ public:
 	 * @param[in] goto_setpoint struct containing current go-to setpoints
 	 * @param[out] trajectory_setpoint struct containing trajectory (tracking) setpoints
 	 */
-	void update(const float dt, const matrix::Vector3f &position, const float heading);
+	void update(const float dt, const matrix::Vector3f &position, const float heading, const matrix::Vector4f &position_setpoint);
 
 	// Setting all parameters from the outside saves 300bytes flash
 	void setParamMpcAccHor(const float param_mpc_acc_hor) { _param_mpc_acc_hor = param_mpc_acc_hor; }
@@ -99,6 +100,7 @@ public:
 	void setParamMpcYawrautoAcc(const float param_mpc_yawrauto_acc) { _param_mpc_yawrauto_acc = param_mpc_yawrauto_acc; }
 	void setParamMpcZVAutoDn(const float param_mpc_z_v_auto_dn) { _param_mpc_z_v_auto_dn = param_mpc_z_v_auto_dn; }
 	void setParamMpcZVAutoUp(const float param_mpc_z_v_auto_up) { _param_mpc_z_v_auto_up = param_mpc_z_v_auto_up; }
+	matrix::Vector3f getManualSetpoint(){ return manualSetpoint;}
 
 private:
 	/**
@@ -115,6 +117,8 @@ private:
 	 */
 	void setHeadingSmootherLimits(const goto_setpoint_s &goto_setpoint);
 
+
+	uORB::Subscription _manual_control_setpoint_sub{ORB_ID(manual_control_setpoint)}; // custom
 	uORB::SubscriptionData<goto_setpoint_s> _goto_setpoint_sub{ORB_ID(goto_setpoint)};
 	uORB::Publication<trajectory_setpoint_s> _trajectory_setpoint_pub{ORB_ID(trajectory_setpoint)};
 	uORB::Publication<vehicle_constraints_s> _vehicle_constraints_pub{ORB_ID(vehicle_constraints)};
@@ -138,4 +142,6 @@ private:
 	float _param_mpc_yawrauto_acc{0.f};
 	float _param_mpc_z_v_auto_dn{0.f};
 	float _param_mpc_z_v_auto_up{0.f};
+
+	matrix::Vector3f manualSetpoint{0.f,0.f,0.f};
 };

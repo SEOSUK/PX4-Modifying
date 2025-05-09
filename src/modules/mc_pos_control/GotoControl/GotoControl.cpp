@@ -57,25 +57,25 @@ bool GotoControl::checkForSetpoint(const hrt_abstime &now, const bool enabled)
 	return need_to_run;
 }
 
-void GotoControl::update(const float dt, const matrix::Vector3f &position, const float heading)
+void GotoControl::update(const float dt, const matrix::Vector3f &position, const float heading,const matrix::Vector4f &position_setpoint)
 {
+	
+	// position 실제 포지션 데이터
+	// heading 실제 헤딩 엥글 (YAW)
+	// 
+
 	if (!_is_initialized) {
-		resetPositionSmoother(position);
+		resetPositionSmoother(position); 
 		resetHeadingSmoother(heading);
 		_is_initialized = true;
 	}
 
 	const goto_setpoint_s &goto_setpoint = _goto_setpoint_sub.get();
+	
+	matrix::Vector3f position_setpoint_xyz{position_setpoint(0), position_setpoint(1), position_setpoint(2)};
 
-	const Vector3f position_setpoint(_goto_setpoint_sub.get().position);
 
-	if (!position_setpoint.isAllFinite()) {
-		// TODO: error messaging
-		_need_smoother_reset = true;
-		return;
-	}
-
-	if (!position.isAllFinite()) {
+	if (!position.isAllFinite() || !position_setpoint_xyz.isAllFinite()) {
 		// TODO: error messaging
 		_need_smoother_reset = true;
 		return;
@@ -84,13 +84,20 @@ void GotoControl::update(const float dt, const matrix::Vector3f &position, const
 	if (_need_smoother_reset) {
 		resetPositionSmoother(position);
 	}
-
-	setPositionSmootherLimits(goto_setpoint);
+	
+	
+	setPositionSmootherLimits(goto_setpoint); 
 
 	const Vector3f feedforward_velocity{};
 	const bool force_zero_velocity_setpoint = false;
 	PositionSmoothing::PositionSmoothingSetpoints out_setpoints;
-	_position_smoothing.generateSetpoints(position, position_setpoint, feedforward_velocity, dt,
+
+	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+
+	
+	_position_smoothing.generateSetpoints(position, position_setpoint_xyz, feedforward_velocity, dt,
 					      force_zero_velocity_setpoint, out_setpoints);
 
 	trajectory_setpoint_s trajectory_setpoint{};

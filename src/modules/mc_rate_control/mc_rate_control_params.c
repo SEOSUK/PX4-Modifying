@@ -43,12 +43,12 @@
  * Roll rate proportional gain, i.e. control output for angular speed error 1 rad/s.
  *
  * @min 0.01
- * @max 0.5
+ * @max 3.0
  * @decimal 3
  * @increment 0.01
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(MC_ROLLRATE_P, 0.15f);
+PARAM_DEFINE_FLOAT(MC_ROLLRATE_P, 1.f); //0.3
 
 /**
  * Roll rate I gain
@@ -60,7 +60,7 @@ PARAM_DEFINE_FLOAT(MC_ROLLRATE_P, 0.15f);
  * @increment 0.01
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(MC_ROLLRATE_I, 0.2f);
+PARAM_DEFINE_FLOAT(MC_ROLLRATE_I, 0.1f);
 
 /**
  * Roll rate integrator limit
@@ -80,12 +80,12 @@ PARAM_DEFINE_FLOAT(MC_RR_INT_LIM, 0.30f);
  * Roll rate differential gain. Small values help reduce fast oscillations. If value is too big oscillations will appear again.
  *
  * @min 0.0
- * @max 0.01
+ * @max 1.0
  * @decimal 4
  * @increment 0.0005
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(MC_ROLLRATE_D, 0.003f);
+PARAM_DEFINE_FLOAT(MC_ROLLRATE_D, 0.01f); //0.003
 
 /**
  * Roll rate feedforward
@@ -124,12 +124,12 @@ PARAM_DEFINE_FLOAT(MC_ROLLRATE_K, 1.0f);
  * Pitch rate proportional gain, i.e. control output for angular speed error 1 rad/s.
  *
  * @min 0.01
- * @max 0.6
+ * @max 3.0
  * @decimal 3
  * @increment 0.01
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(MC_PITCHRATE_P, 0.15f);
+PARAM_DEFINE_FLOAT(MC_PITCHRATE_P, 1.f); // 0.3
 
 /**
  * Pitch rate I gain
@@ -165,7 +165,7 @@ PARAM_DEFINE_FLOAT(MC_PR_INT_LIM, 0.30f);
  * @increment 0.0005
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(MC_PITCHRATE_D, 0.003f);
+PARAM_DEFINE_FLOAT(MC_PITCHRATE_D, 0.01f); //0.003
 
 /**
  * Pitch rate feedforward

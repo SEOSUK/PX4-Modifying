@@ -54,11 +54,19 @@ void AttitudeControl::setProportionalGain(const matrix::Vector3f &proportional_g
 
 matrix::Vector3f AttitudeControl::update(const Quatf &q) const
 {
+
+	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+
 	Quatf qd = _attitude_setpoint_q;
 
 	// calculate reduced desired attitude neglecting vehicle's yaw to prioritize roll and pitch
-	const Vector3f e_z = q.dcm_z();
-	const Vector3f e_z_d = qd.dcm_z();
+	// q.dcm()은 이 쿼터니언을 **DCM (3×3 회전행렬)**로 변환함
+	// q.dcm_z()는 그 DCM에서 **Z축 벡터 (3번째 열)**을 반환함
+	// body frame의 Z축이 world frame에서 어디를 향하는지 계산
+	const Vector3f e_z = q.dcm_z(); 
+	const Vector3f e_z_d = qd.dcm_z(); 
 	Quatf qd_red(e_z, e_z_d);
 
 	if (fabsf(qd_red(1)) > (1.f - 1e-5f) || fabsf(qd_red(2)) > (1.f - 1e-5f)) {
@@ -74,10 +82,16 @@ matrix::Vector3f AttitudeControl::update(const Quatf &q) const
 
 	// mix full and reduced desired attitude
 	Quatf q_mix = qd_red.inversed() * qd;
-	q_mix.canonicalize();
+
+	// 쿼터니언의 부호를 통일된 형태로 맞추는 함수
+	// 쿼터니언 q와 -q는 동일한 회전을 나타냄 이로인한 계산 오류를 막기 위함
+	q_mix.canonicalize(); 
 	// catch numerical problems with the domain of acosf and asinf
+	// acosf, asinf 계산 시 범위가 살짝 넘어가면 NaN이 되므로 이를 방지
 	q_mix(0) = math::constrain(q_mix(0), -1.f, 1.f);
 	q_mix(3) = math::constrain(q_mix(3), -1.f, 1.f);
+
+	// 
 	qd = qd_red * Quatf(cosf(_yaw_w * acosf(q_mix(0))), 0, 0, sinf(_yaw_w * asinf(q_mix(3))));
 
 	// quaternion attitude control law, qe is rotation from q to qd
@@ -105,6 +119,11 @@ matrix::Vector3f AttitudeControl::update(const Quatf &q) const
 	for (int i = 0; i < 3; i++) {
 		rate_setpoint(i) = math::constrain(rate_setpoint(i), -_rate_limit(i), _rate_limit(i));
 	}
+
+	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+	// rate_setpoint는 딱히 정규화를 안하므로 체크할게 따로 없어 보인다.
 
 	return rate_setpoint;
 }

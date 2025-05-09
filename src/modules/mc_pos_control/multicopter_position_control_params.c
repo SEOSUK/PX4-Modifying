@@ -41,12 +41,12 @@
  *
  * @unit norm
  * @min 0.1
- * @max 0.8
+ * @max 15.0
  * @decimal 2
  * @increment 0.01
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_THR_HOVER, 0.5f);
+PARAM_DEFINE_FLOAT(MPC_THR_HOVER, 9.0f); //0.5f
 
 /**
  * Hover thrust estimator
@@ -67,12 +67,12 @@ PARAM_DEFINE_INT32(MPC_USE_HTE, 1);
  *
  * @unit norm
  * @min 0
- * @max 0.5
+ * @max 15.0
  * @decimal 2
  * @increment 0.01
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_THR_XY_MARG, 0.3f);
+PARAM_DEFINE_FLOAT(MPC_THR_XY_MARG, 5.0f); //0.3f
 
 /**
  * Numerical velocity derivative low pass cutoff frequency

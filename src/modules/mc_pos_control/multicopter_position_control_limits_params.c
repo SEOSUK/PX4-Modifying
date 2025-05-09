@@ -44,7 +44,7 @@
  * @increment 1
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_XY_VEL_MAX, 12.f);
+PARAM_DEFINE_FLOAT(MPC_XY_VEL_MAX, 10.f);
 
 /**
  * Maximum ascent velocity
@@ -55,13 +55,45 @@ PARAM_DEFINE_FLOAT(MPC_XY_VEL_MAX, 12.f);
  * For default autonomous velocity see MPC_Z_V_AUTO_UP
  *
  * @unit m/s
- * @min 0.5
+ * @min 0.1
  * @max 8
  * @increment 0.1
  * @decimal 1
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_UP, 3.f);
+PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_UP, 0.7f);
+
+/**
+ * Maximum horizontal acceleration
+ *
+ * Absolute maximum for all acceleration controlled modes.
+ * Any higher value is truncated.
+ *
+ * @unit m/s
+ * @min 0
+ * @max 100.0
+ * @decimal 1
+ * @increment 1
+ * @group Multicopter Position Control
+ */
+ PARAM_DEFINE_FLOAT(MPC_XY_ACC_MAX, 5.f);
+
+ /**
+  * Maximum ascent acceleration
+  *
+  * Absolute maximum for all climb rate dot controlled modes.
+  * In manually piloted modes full stick deflection commands this acceleration.
+  *
+  * For default autonomous acceleration see MPC_Z_V_AUTO_UP
+  *
+  * @unit m/s
+  * @min 0.5
+  * @max 100.0
+  * @increment 0.1
+  * @decimal 1
+  * @group Multicopter Position Control
+  */
+ PARAM_DEFINE_FLOAT(MPC_Z_ACC_MAX_UP, 80.f);
 
 /**
  * Maximum descent velocity
@@ -72,13 +104,13 @@ PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_UP, 3.f);
  * For default autonomous velocity see MPC_Z_V_AUTO_UP
  *
  * @unit m/s
- * @min 0.5
- * @max 4
+ * @min 0.1
+ * @max 100.0
  * @increment 0.1
  * @decimal 1
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_DN, 1.5f);
+PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_DN, 0.1f);
 
 /**
  * Maximum tilt angle in air
@@ -118,12 +150,12 @@ PARAM_DEFINE_FLOAT(MPC_TILTMAX_LND, 12.f);
  *
  * @unit norm
  * @min 0.05
- * @max 0.5
+ * @max 15.0
  * @decimal 2
  * @increment 0.01
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_THR_MIN, 0.12f);
+PARAM_DEFINE_FLOAT(MPC_THR_MIN, 1.0f); //0.12f
 
 /**
  * Maximum collective thrust in climb rate controlled modes
@@ -132,12 +164,12 @@ PARAM_DEFINE_FLOAT(MPC_THR_MIN, 0.12f);
  *
  * @unit norm
  * @min 0
- * @max 1
+ * @max 50.0
  * @decimal 2
  * @increment 0.05
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_THR_MAX, 1.f);
+PARAM_DEFINE_FLOAT(MPC_THR_MAX, 50.f); //1.f
 
 /**
  * Acceleration to tilt coupling

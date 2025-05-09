@@ -45,6 +45,9 @@ px4_add_module(
 	SRCS
 		ControlAllocator.cpp
 		ControlAllocator.hpp
+
+		ControlAllocationUtils.cpp
+		ControlAllocationUtils.hpp
 	MODULE_CONFIG
 		module.yaml
 	DEPENDS

@@ -41,22 +41,8 @@
 
 #pragma once
 
-#include <ActuatorEffectiveness.hpp>
-#include <ActuatorEffectivenessMultirotor.hpp>
-#include <ActuatorEffectivenessStandardVTOL.hpp>
-#include <ActuatorEffectivenessTiltrotorVTOL.hpp>
-#include <ActuatorEffectivenessTailsitterVTOL.hpp>
-#include <ActuatorEffectivenessRoverAckermann.hpp>
-#include <ActuatorEffectivenessFixedWing.hpp>
-#include <ActuatorEffectivenessMCTilt.hpp>
-#include <ActuatorEffectivenessCustom.hpp>
-#include <ActuatorEffectivenessUUV.hpp>
-#include <ActuatorEffectivenessHelicopter.hpp>
-#include <ActuatorEffectivenessHelicopterCoaxial.hpp>
 
-#include <ControlAllocation.hpp>
-#include <ControlAllocationPseudoInverse.hpp>
-#include <ControlAllocationSequentialDesaturation.hpp>
+#include <ControlAllocationUtils.hpp> // custom
 
 #include <lib/matrix/matrix/math.hpp>
 #include <lib/perf/perf_counter.h>
@@ -69,8 +55,7 @@
 #include <uORB/Subscription.hpp>
 #include <uORB/SubscriptionCallback.hpp>
 #include <uORB/topics/actuator_motors.h>
-#include <uORB/topics/actuator_servos.h>
-#include <uORB/topics/actuator_servos_trim.h>
+
 #include <uORB/topics/control_allocator_status.h>
 #include <uORB/topics/parameter_update.h>
 #include <uORB/topics/vehicle_control_mode.h>
@@ -79,16 +64,19 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/failure_detector_status.h>
 
+#include <uORB/topics/manual_control_setpoint.h> // custom
+
+//ㅡㅡㅡㅡㅡㅡㅡㅡㅡ25.03.18.Song Yeong Inㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
+#include <cmath>
+#include <uORB/topics/servo_angle.h>
+#include <uORB/topics/thrust_command.h>
+#include <uORB/topics/wrench_command.h>
+
 class ControlAllocator : public ModuleBase<ControlAllocator>, public ModuleParams, public px4::ScheduledWorkItem
 {
 public:
-	static constexpr int NUM_ACTUATORS = ControlAllocation::NUM_ACTUATORS;
-	static constexpr int NUM_AXES = ControlAllocation::NUM_AXES;
 
-	static constexpr int MAX_NUM_MOTORS = actuator_motors_s::NUM_CONTROLS;
-	static constexpr int MAX_NUM_SERVOS = actuator_servos_s::NUM_CONTROLS;
 
-	using ActuatorVector = ActuatorEffectiveness::ActuatorVector;
 
 	ControlAllocator();
 
@@ -110,66 +98,26 @@ public:
 
 	bool init();
 
+	
+
 private:
 
-	struct ParamHandles {
-		param_t slew_rate_motors[MAX_NUM_MOTORS];
-		param_t slew_rate_servos[MAX_NUM_SERVOS];
-	};
-
-	struct Params {
-		float slew_rate_motors[MAX_NUM_MOTORS];
-		float slew_rate_servos[MAX_NUM_SERVOS];
-	};
 
 	/**
 	 * initialize some vectors/matrices from parameters
 	 */
+		
 	void parameters_updated();
 
-	void update_allocation_method(bool force);
-	bool update_effectiveness_source();
+	void update_effectiveness_matrix_if_needed();
 
-	void update_effectiveness_matrix_if_needed(EffectivenessUpdateReason reason);
-
-	void check_for_motor_failures();
-
+	
 	void publish_control_allocator_status(int matrix_index);
 
 	void publish_actuator_controls();
 
-	AllocationMethod _allocation_method_id{AllocationMethod::NONE};
-	ControlAllocation *_control_allocation[ActuatorEffectiveness::MAX_NUM_MATRICES] {}; 	///< class for control allocation calculations
-	int _num_control_allocation{0};
 	hrt_abstime _last_effectiveness_update{0};
-
-	enum class EffectivenessSource {
-		NONE = -1,
-		MULTIROTOR = 0,
-		FIXED_WING = 1,
-		STANDARD_VTOL = 2,
-		TILTROTOR_VTOL = 3,
-		TAILSITTER_VTOL = 4,
-		ROVER_ACKERMANN = 5,
-		ROVER_DIFFERENTIAL = 6,
-		MOTORS_6DOF = 7,
-		MULTIROTOR_WITH_TILT = 8,
-		CUSTOM = 9,
-		HELICOPTER_TAIL_ESC = 10,
-		HELICOPTER_TAIL_SERVO = 11,
-		HELICOPTER_COAXIAL = 12,
-	};
-
-	enum class FailureMode {
-		IGNORE = 0,
-		REMOVE_FIRST_FAILING_MOTOR = 1,
-	};
-
-	EffectivenessSource _effectiveness_source_id{EffectivenessSource::NONE};
-	ActuatorEffectiveness *_actuator_effectiveness{nullptr}; 	///< class providing actuator effectiveness
-
-	uint8_t _control_allocation_selection_indexes[NUM_ACTUATORS * ActuatorEffectiveness::MAX_NUM_MATRICES] {};
-	int _num_actuators[(int)ActuatorType::COUNT] {};
+	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 
 	// Inputs
 	uORB::SubscriptionCallbackWorkItem _vehicle_torque_setpoint_sub{this, ORB_ID(vehicle_torque_setpoint)};  /**< vehicle torque setpoint subscription */
@@ -182,17 +130,28 @@ private:
 	uORB::PublicationMulti<control_allocator_status_s> _control_allocator_status_pub[2] {ORB_ID(control_allocator_status), ORB_ID(control_allocator_status)};
 
 	uORB::Publication<actuator_motors_s>	_actuator_motors_pub{ORB_ID(actuator_motors)};
-	uORB::Publication<actuator_servos_s>	_actuator_servos_pub{ORB_ID(actuator_servos)};
-	uORB::Publication<actuator_servos_trim_s>	_actuator_servos_trim_pub{ORB_ID(actuator_servos_trim)};
 
-	uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update), 1_s};
+	uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update), 1}; //ms
 
 	uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
 	uORB::Subscription _vehicle_control_mode_sub{ORB_ID(vehicle_control_mode)};
 	uORB::Subscription _failure_detector_status_sub{ORB_ID(failure_detector_status)};
 
+	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ custom subscriber | publisher ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+	uORB::SubscriptionCallbackWorkItem _servo_angle_sub{this, ORB_ID(servo_angle)};
+	uORB::Publication<thrust_command_s> _thrust_command_pub{ORB_ID(thrust_command)};
+	uORB::Publication<wrench_command_s> _wrench_command_pub{ORB_ID(wrench_command)};
+	uORB::Subscription _manual_control_setpoint_sub{ORB_ID(manual_control_setpoint)};
+
+
+
+	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+	matrix::Matrix<float, 4,4> _custom_effectiveness;
 	matrix::Vector3f _torque_sp;
 	matrix::Vector3f _thrust_sp;
+	matrix::Vector4f _servo_ang{0.0,0.0,0.0,0.0}; // custom
 	bool _publish_controls{true};
 
 	// Reflects motor failures that are currently handled, not motor failures that are reported.
@@ -206,9 +165,14 @@ private:
 	hrt_abstime _timestamp_sample{0};
 	hrt_abstime _last_status_pub{0};
 
-	ParamHandles _param_handles{};
-	Params _params{};
 	bool _has_slew_rate{false};
+	float dumi = 0.f;
+
+	matrix::Matrix<float, 4, 4> _mix;
+	matrix::Vector<float, 4> _actuator_min; 	///< Minimum actuator values
+	matrix::Vector<float, 4> _actuator_max; 	///< Maximum actuator values
+	matrix::Vector<float, 4> _actuator_sp;  	///< Actuator setpoint
+	matrix::Vector<float, 4> _control_sp;   	///< Control setpoint
 
 	DEFINE_PARAMETERS(
 		(ParamInt<px4::params::CA_AIRFRAME>) _param_ca_airframe,

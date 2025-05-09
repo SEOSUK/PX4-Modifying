@@ -1,0 +1,8 @@
+menuconfig MODULES_LISTEN_AND_SPEAK
+	bool "listen_and_speak"
+	default y
+
+	help
+	  Enables the listen_and_speak module, which subscribes to servo_angle
+	  and publishes wrench_command & thrust_command.
+

@@ -5,6 +5,9 @@
 #####
 publications:
 
+  - topic: /fmu/out/trajectory_setpoint
+    type: px4_msgs::msg::TrajectorySetpoint
+
   - topic: /fmu/out/register_ext_component_reply
     type: px4_msgs::msg::RegisterExtComponentReply
 
@@ -44,8 +47,8 @@ publications:
   - topic: /fmu/out/timesync_status
     type: px4_msgs::msg::TimesyncStatus
 
-  # - topic: /fmu/out/vehicle_angular_velocity
-  #   type: px4_msgs::msg::VehicleAngularVelocity
+  - topic: /fmu/out/vehicle_angular_velocity
+    type: px4_msgs::msg::VehicleAngularVelocity
 
   - topic: /fmu/out/vehicle_attitude
     type: px4_msgs::msg::VehicleAttitude
@@ -65,6 +68,9 @@ publications:
   - topic: /fmu/out/vehicle_local_position
     type: px4_msgs::msg::VehicleLocalPosition
 
+  - topic: /fmu/out/vehicle_local_position_setpoint
+    type: px4_msgs::msg::VehicleLocalPositionSetpoint
+  
   - topic: /fmu/out/vehicle_odometry
     type: px4_msgs::msg::VehicleOdometry
 
@@ -74,8 +80,33 @@ publications:
   - topic: /fmu/out/vehicle_trajectory_waypoint_desired
     type: px4_msgs::msg::VehicleTrajectoryWaypoint
 
+  - topic: /fmu/out/wrench_command
+    type: px4_msgs::msg::WrenchCommand
+
+  - topic: /fmu/out/thrust_command
+    type: px4_msgs::msg::ThrustCommand
+  
+  - topic: /fmu/out/vehicle_thrust_setpoint
+    type: px4_msgs::msg::VehicleThrustSetpoint
+
+  - topic: /fmu/out/vehicle_torque_setpoint
+    type: px4_msgs::msg::VehicleTorqueSetpoint
+  
+  - topic: /fmu/out/vehicle_rates_setpoint
+    type: px4_msgs::msg::VehicleRatesSetpoint
+
+  - topic: /fmu/out/vehicle_attitude_setpoint
+    type: px4_msgs::msg::VehicleAttitudeSetpoint
+  
+  - topic: /fmu/out/vehicle_acceleration
+    type: px4_msgs::msg::VehicleAcceleration
+
 # Create uORB::Publication
 subscriptions:
+
+  - topic: /fmu/in/servo_angle  
+    type: px4_msgs::msg::ServoAngle
+    
   - topic: /fmu/in/register_ext_component_request
     type: px4_msgs::msg::RegisterExtComponentRequest
 
@@ -118,18 +149,9 @@ subscriptions:
   - topic: /fmu/in/telemetry_status
     type: px4_msgs::msg::TelemetryStatus
 
-  - topic: /fmu/in/trajectory_setpoint
-    type: px4_msgs::msg::TrajectorySetpoint
-
-  - topic: /fmu/in/vehicle_attitude_setpoint
-    type: px4_msgs::msg::VehicleAttitudeSetpoint
-
   - topic: /fmu/in/vehicle_mocap_odometry
     type: px4_msgs::msg::VehicleOdometry
-
-  - topic: /fmu/in/vehicle_rates_setpoint
-    type: px4_msgs::msg::VehicleRatesSetpoint
-
+  
   - topic: /fmu/in/differential_drive_setpoint
     type: px4_msgs::msg::DifferentialDriveSetpoint
 
@@ -141,18 +163,6 @@ subscriptions:
 
   - topic: /fmu/in/vehicle_command_mode_executor
     type: px4_msgs::msg::VehicleCommand
-
-  - topic: /fmu/in/vehicle_trajectory_bezier
-    type: px4_msgs::msg::VehicleTrajectoryBezier
-
-  - topic: /fmu/in/vehicle_trajectory_waypoint
-    type: px4_msgs::msg::VehicleTrajectoryWaypoint
-
-  - topic: /fmu/in/vehicle_thrust_setpoint
-    type: px4_msgs::msg::VehicleThrustSetpoint
-
-  - topic: /fmu/in/vehicle_torque_setpoint
-    type: px4_msgs::msg::VehicleTorqueSetpoint
 
   - topic: /fmu/in/actuator_motors
     type: px4_msgs::msg::ActuatorMotors
