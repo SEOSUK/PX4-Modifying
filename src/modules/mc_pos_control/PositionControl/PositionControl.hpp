@@ -85,7 +85,7 @@ public:
 	 * Set the position control gains
 	 * @param P 3D vector of proportional gains for x,y,z axis
 	 */
-	void setPositionGains(const matrix::Vector3f &P) { _gain_pos_p = P; }
+	void setPositionGains(const matrix::Vector3f &P,const matrix::Vector3f &D) { _gain_pos_p = P; _gain_pos_d = D;}
 
 	/**
 	 * Set the velocity control gains
@@ -212,6 +212,7 @@ private:
 
 	// Gains
 	matrix::Vector3f _gain_pos_p; ///< Position control proportional gain
+	matrix::Vector3f _gain_pos_d; ///< Position control derivative gain
 	matrix::Vector3f _gain_vel_p; ///< Velocity control proportional gain
 	matrix::Vector3f _gain_vel_i; ///< Velocity control integral gain
 	matrix::Vector3f _gain_vel_d; ///< Velocity control derivative gain

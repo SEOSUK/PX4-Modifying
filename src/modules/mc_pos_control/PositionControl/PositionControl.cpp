@@ -134,11 +134,9 @@ void PositionControl::setInputSetpoint(const matrix::Vector4f &pose_setpoint)
 	_pos_sp(0) = pose_setpoint(0);
 	_pos_sp(1) = pose_setpoint(1);
 	_pos_sp(2) = pose_setpoint(2);
-	
-	//_vel_sp = Vector3f(setpoint.velocity);
-	//_acc_sp = Vector3f(setpoint.acceleration);
+		
 	_yaw_sp = pose_setpoint(3);
-	_yawspeed_sp = 0.0;//setpoint.yawspeed; custom 일단 모르니까.
+	_yawspeed_sp = 0.f;
 }
 
 bool PositionControl::update(const float dt, bool arm_flag, bool pos_flag)
@@ -185,7 +183,22 @@ bool PositionControl::update(const float dt, bool arm_flag, bool pos_flag)
 void PositionControl::_positionControl()
 {
 	// P-position controller
-	Vector3f vel_sp_position = (_pos_sp - _pos).emult(_gain_pos_p);
+	// Vector3f vel_sp_position = (_pos_sp - _pos).emult(_gain_pos_p) - _vel.emult(_gain_pos_d);
+
+	Vector3f vel_sp_position;
+
+	vel_sp_position(0) = (_pos_sp(0) - _pos(0))*static_cast<float>(1.0) - _vel(0)*static_cast<float>(0.0);
+	vel_sp_position(1) = (_pos_sp(1) - _pos(1))*static_cast<float>(1.0) - _vel(1)*static_cast<float>(0.0);
+	vel_sp_position(2) = (_pos_sp(2) - _pos(2))*static_cast<float>(0.5) - _vel(2)*static_cast<float>(0.1);
+	// pz : 1,   dz : 0.05
+	// pz : 0.5, dz : 0.025
+	// pz : 0.5, dz : 0.25
+	// pz : 0.5, dz : 0.1
+
+	// 0,0,0 한번 체크해보기, 그리고 1, 0,0 체크해보기 --> 이전단계 제어기에서 빨간색이 뒤에 까만색과 일치하는지 (1,0,0 일때) : clear
+
+	// 이 코드 그대로 두고 velovity z contraints를 더 빡세게 해서 다시 한번만 비행해보기!! --> 원래 게인으로!!
+
 	// Position and feed-forward velocity setpoints or position states being NAN results in them not having an influence
 	//ControlMath::addIfNotNanVector3f(_vel_sp, vel_sp_position); //custom
 	// make sure there are no NAN elements for further reference while constraining
@@ -198,7 +211,7 @@ void PositionControl::_positionControl()
 	//ControlMath::constrainXY_custom(vel_sp_position,_lim_vel_horizontal);
 	//ControlMath::constrainXY(vel_sp_position.xy(), (_vel_sp - vel_sp_position).xy(), _lim_vel_horizontal);
 	// Constrain velocity in z-direction.
-	_vel_sp(2) = math::constrain(vel_sp_position(2), -_lim_vel_up, _lim_vel_up);//_lim_vel_down
+	_vel_sp(2) = math::constrain(vel_sp_position(2), static_cast<float>(-0.5), static_cast<float>(0.5));//_lim_vel_down -0.5
 
 	// 여기까진 normalization 파트가 없음
 }
@@ -212,31 +225,44 @@ void PositionControl::_velocityControl(const float dt) // 사실상 여기가 �
 	// Constrain vertical velocity integral
 	_vel_int(2) = math::constrain(_vel_int(2), -CONSTANTS_ONE_G, CONSTANTS_ONE_G);
 
+
 	// PID velocity control
+	// Vector3f gravity = {0.0, 0.0, -9.81};
 	Vector3f vel_error =  _w2b*(_vel_sp - _vel); //_w2b
 	
 	//_pos_sp = vel_error;
 	
-
-	Vector3f acc_sp_velocity = vel_error.emult(_gain_vel_p) + _vel_int - _vel_dot.emult(_gain_vel_d);
+	// Vector3f zero3{0, 0, 0};
+	// Vector3f acc_sp_velocity = vel_error.emult(_gain_vel_p) + _vel_int - _vel_dot.emult(_gain_vel_d);
+	// Vector3f acc_sp_velocity = vel_error.emult(_gain_vel_p) - _vel_dot.emult(_gain_vel_d);
+	Vector3f acc_sp_velocity;
 	
+	acc_sp_velocity(0) = vel_error(0)*(static_cast<float>(1.0)) - _vel_dot(0)*(static_cast<float>(0.0));
+	acc_sp_velocity(1) = vel_error(1)*(static_cast<float>(1.0)) - _vel_dot(1)*(static_cast<float>(0.0));
+	acc_sp_velocity(2) = vel_error(2)*(static_cast<float>(0.2)) - _vel_dot(2)*(static_cast<float>(0.01));
 
-	// No control input from setpoints or corresponding states which are NAN
+	// acl_z 
+	// Pz = 0.2, Dz = 0.01
+	// 
+
+	// No control input from setpoints or corresponding states which are NAN	
 	// acc_sp_velocity가 NAN값이 아니면 _acc_sp에 값을 더해주는 함수
+	
 	ControlMath::addIfNotNanVector3f(_acc_sp, acc_sp_velocity);
+
+	_acc_sp(0) = acc_sp_velocity(0);
+	_acc_sp(1) = acc_sp_velocity(1);
+	//_acc_sp(2) = acc_sp_velocity(2) + _vel_int(2);
 
 	_acc_sp(0) = math::constrain(_acc_sp(0), -_lim_acc_horizontal, _lim_acc_horizontal);
 	_acc_sp(1) = math::constrain(_acc_sp(1), -_lim_acc_horizontal, _lim_acc_horizontal);
 	_acc_sp(2) = math::constrain(_acc_sp(2), -_lim_acc_vertical, 0.f);
 
-	//_accelerationControl(); // 이제 여기가 문제인듯
-	//float mass = 2.8;
-	//_thr_sp = mass*_acc_sp; //custom
-	_thr_sp = {0.f, 0.f, 0.f};//_acc_sp;
-	/*
-	_thr_sp(0) =  _acc_sp(0);
-	_thr_sp(1) =  _acc_sp(1);
-	_thr_sp(2) =  _acc_sp(2);*/
+	float mass = 8.f;
+	
+	_thr_sp(0) =  mass*_acc_sp(0);
+	_thr_sp(1) =  mass*_acc_sp(1);
+	_thr_sp(2) =  _acc_sp(2);
 	//if(_acc_sp(2) <= 0.f){ _thr_sp(2) = 1.0;} //custom
 
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
@@ -245,6 +271,13 @@ void PositionControl::_velocityControl(const float dt) // 사실상 여기가 �
 	// 여기서부터 thrust limitation 걸려있음 잘 보고 수정해야함
 	//_lim_thr_min/max는 parameter 설정으로 update되는 애들 지금은 N단위로 정의해 놨음(1~15(N))
 	// Integrator anti-windup in vertical direction
+
+	// Make sure integral doesn't get NAN
+	ControlMath::setZeroIfNanVector3f(vel_error);
+	// Update integral part of velocity control
+	// _vel_int += vel_error.emult(_gain_vel_i) * dt;
+	_vel_int(2) += vel_error(2)*_gain_vel_i(2) * dt;
+
 	
 	if ((_thr_sp(2) <= _lim_thr_min && vel_error(2) <= 0.f) ||
 	    (_thr_sp(2) >= _lim_thr_max && vel_error(2) >= 0.f)) {
@@ -277,7 +310,7 @@ void PositionControl::_velocityControl(const float dt) // 사실상 여기가 �
 	
 	if (thrust_max_xy_squared > 0.f) {
 		thrust_max_xy = sqrtf(thrust_max_xy_squared);
-	}
+	}s
 
 	// Saturate thrust in horizontal direction
 	if (thrust_sp_xy_norm > thrust_max_xy) {
@@ -286,10 +319,9 @@ void PositionControl::_velocityControl(const float dt) // 사실상 여기가 �
 
 	//vel_error.xy() = -Vector2f(vel_error); //Vector2f(vel_error) - arw_gain * (acc_sp_xy - acc_limited_xy);
 		
-	// Make sure integral doesn't get NAN
-	ControlMath::setZeroIfNanVector3f(vel_error);
-	// Update integral part of velocity control
-	_vel_int += vel_error.emult(_gain_vel_i) * dt;
+	
+	
+
 }
 
 // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //

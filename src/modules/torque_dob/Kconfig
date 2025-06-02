@@ -1,0 +1,12 @@
+menuconfig MODULES_TORQUE_DOB
+	bool "torque_dob"
+	default n
+	---help---
+		Enable support for torque_dob
+
+menuconfig USER_TORQUE_DOB
+	bool "torque_dob running as userspace module"
+	default y
+	depends on BOARD_PROTECTED && MODULES_TORQUE_DOB
+	---help---
+		Put torque_dob in userspace memory

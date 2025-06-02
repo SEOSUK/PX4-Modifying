@@ -44,7 +44,7 @@
  * @increment 1
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_XY_VEL_MAX, 10.f);
+PARAM_DEFINE_FLOAT(MPC_XY_VEL_MAX, 10.0);
 
 /**
  * Maximum ascent velocity
@@ -61,7 +61,7 @@ PARAM_DEFINE_FLOAT(MPC_XY_VEL_MAX, 10.f);
  * @decimal 1
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_UP, 0.7f);
+PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_UP, 0.7);
 
 /**
  * Maximum horizontal acceleration
@@ -76,7 +76,7 @@ PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_UP, 0.7f);
  * @increment 1
  * @group Multicopter Position Control
  */
- PARAM_DEFINE_FLOAT(MPC_XY_ACC_MAX, 5.f);
+ PARAM_DEFINE_FLOAT(MPC_XY_ACC_MAX, 10.0); // 5
 
  /**
   * Maximum ascent acceleration
@@ -93,7 +93,7 @@ PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_UP, 0.7f);
   * @decimal 1
   * @group Multicopter Position Control
   */
- PARAM_DEFINE_FLOAT(MPC_Z_ACC_MAX_UP, 80.f);
+ PARAM_DEFINE_FLOAT(MPC_Z_ACC_MAX_UP, 80.0);
 
 /**
  * Maximum descent velocity
@@ -110,7 +110,7 @@ PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_UP, 0.7f);
  * @decimal 1
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_DN, 0.1f);
+PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_DN, 0.5);
 
 /**
  * Maximum tilt angle in air
@@ -125,7 +125,7 @@ PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_DN, 0.1f);
  * @increment 1
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_TILTMAX_AIR, 45.f);
+PARAM_DEFINE_FLOAT(MPC_TILTMAX_AIR, 45.0);
 
 /**
  * Maximum tilt during inital takeoff ramp
@@ -139,7 +139,7 @@ PARAM_DEFINE_FLOAT(MPC_TILTMAX_AIR, 45.f);
  * @increment 1
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_TILTMAX_LND, 12.f);
+PARAM_DEFINE_FLOAT(MPC_TILTMAX_LND, 12.0);
 
 /**
  * Minimum collective thrust in climb rate controlled modes
@@ -155,7 +155,7 @@ PARAM_DEFINE_FLOAT(MPC_TILTMAX_LND, 12.f);
  * @increment 0.01
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_THR_MIN, 1.0f); //0.12f
+PARAM_DEFINE_FLOAT(MPC_THR_MIN, 1.0); //0.12f
 
 /**
  * Maximum collective thrust in climb rate controlled modes
@@ -169,7 +169,7 @@ PARAM_DEFINE_FLOAT(MPC_THR_MIN, 1.0f); //0.12f
  * @increment 0.05
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_THR_MAX, 50.f); //1.f
+PARAM_DEFINE_FLOAT(MPC_THR_MAX, 50.0); //1.f
 
 /**
  * Acceleration to tilt coupling

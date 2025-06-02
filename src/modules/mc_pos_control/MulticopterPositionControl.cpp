@@ -145,13 +145,14 @@ void MulticopterPositionControl::parameters_update(bool force)
 			param_notify_changes();
 		}
 
-
+			
 		// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 		// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 		// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 		
 		// Position, Velocity Controller Gain Definition Part
-		_control.setPositionGains(Vector3f(_param_mpc_xy_p.get(), _param_mpc_xy_p.get(), _param_mpc_z_p.get()));
+		_control.setPositionGains(Vector3f(_param_mpc_xy_p.get(), _param_mpc_xy_p.get(), _param_mpc_z_p.get()),
+								  Vector3f(_param_mpc_xy_p.get(), _param_mpc_xy_p.get(), 0.f));
 		_control.setVelocityGains(
 			Vector3f(_param_mpc_xy_vel_p_acc.get(), _param_mpc_xy_vel_p_acc.get(), _param_mpc_z_vel_p_acc.get()),
 			Vector3f(_param_mpc_xy_vel_i_acc.get(), _param_mpc_xy_vel_i_acc.get(), _param_mpc_z_vel_i_acc.get()),
@@ -402,7 +403,17 @@ void MulticopterPositionControl::Run()
 		
 	}
 
-	if((double)manual_setpoint(2) > 0.0){manual_setpoint(2) = 0.0;}
+
+	// if((double)manual_setpoint(2) > 0.0){manual_setpoint(2) = 0.0;}
+	float altitude_limit = 0.6f;
+
+	if(manual_setpoint(2)<0.f){pose_z_setpoint -= 0.001f;}
+	else if(manual_setpoint(2)>0.f){pose_z_setpoint += 0.001f;}
+	else {pose_z_setpoint += 0.f;}
+
+	if(pose_z_setpoint < -altitude_limit){ pose_z_setpoint = -altitude_limit;}
+    
+	if(pose_z_setpoint > 0.0f){pose_z_setpoint = 0.0f;}
 
 	
 
@@ -436,7 +447,9 @@ void MulticopterPositionControl::Run()
 
 	pose_setpoint(0) = base_setpoint(0) + manual_setpoint(0);
 	pose_setpoint(1) = base_setpoint(1) + manual_setpoint(1);
-	pose_setpoint(2) = base_setpoint(2) + manual_setpoint(2);
+	//pose_setpoint(2) = base_setpoint(2) + manual_setpoint(2);
+
+	pose_setpoint(2) = base_setpoint(2) + pose_z_setpoint;
 	pose_setpoint(3) = base_setpoint(3) + manual_setpoint(3);
 
 	// if a goto setpoint available this publishes a trajectory setpoint to go there

@@ -48,7 +48,7 @@
  * @increment 0.01
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(MC_ROLLRATE_P, 1.f); //0.3
+PARAM_DEFINE_FLOAT(MC_ROLLRATE_P, 1.0f); // 0.3 / 1.0
 
 /**
  * Roll rate I gain
@@ -129,7 +129,7 @@ PARAM_DEFINE_FLOAT(MC_ROLLRATE_K, 1.0f);
  * @increment 0.01
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(MC_PITCHRATE_P, 1.f); // 0.3
+PARAM_DEFINE_FLOAT(MC_PITCHRATE_P, 1.0f); // 0.3 / 1.0
 
 /**
  * Pitch rate I gain
@@ -141,7 +141,7 @@ PARAM_DEFINE_FLOAT(MC_PITCHRATE_P, 1.f); // 0.3
  * @increment 0.01
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(MC_PITCHRATE_I, 0.2f);
+PARAM_DEFINE_FLOAT(MC_PITCHRATE_I, 0.1f);
 
 /**
  * Pitch rate integrator limit
@@ -204,12 +204,12 @@ PARAM_DEFINE_FLOAT(MC_PITCHRATE_K, 1.0f);
  * Yaw rate proportional gain, i.e. control output for angular speed error 1 rad/s.
  *
  * @min 0.0
- * @max 0.6
+ * @max 5.0
  * @decimal 2
  * @increment 0.01
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(MC_YAWRATE_P, 0.2f);
+PARAM_DEFINE_FLOAT(MC_YAWRATE_P, 0.5f); // 0.2 / 0.5
 
 /**
  * Yaw rate I gain
@@ -245,7 +245,7 @@ PARAM_DEFINE_FLOAT(MC_YR_INT_LIM, 0.30f);
  * @increment 0.01
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(MC_YAWRATE_D, 0.0f);
+PARAM_DEFINE_FLOAT(MC_YAWRATE_D, 0.0f); // 0.0 / 0.01
 
 /**
  * Yaw rate feedforward
@@ -292,3 +292,5 @@ PARAM_DEFINE_FLOAT(MC_YAWRATE_K, 1.0f);
  * @group Multicopter Rate Control
  */
 PARAM_DEFINE_INT32(MC_BAT_SCALE_EN, 0);
+
+PARAM_DEFINE_FLOAT(MC_YAWTRIM, 1.0f);

@@ -1,6 +1,6 @@
 ############################################################################
 #
-#   Copyright (c) 2019 PX4 Development Team. All rights reserved.
+#   Copyright (c) 2018 PX4 Development Team. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -32,23 +32,18 @@
 ############################################################################
 
 px4_add_module(
-	MODULE modules__mc_rate_control
-	MAIN mc_rate_control
+	MODULE modules__torque_dob
+	MAIN torque_dob
 	COMPILE_FLAGS
 		${MAX_CUSTOM_OPT_LEVEL}
+	
 	SRCS
-		MulticopterRateControl.cpp
-		MulticopterRateControl.hpp
+		torque_dob.cpp
+		torque_dob.hpp
 
-		torque_disturbance_observer.cpp
-		torque_disturbance_observer.hpp
-
-		dob_based_com_estimator.cpp
-		dob_based_com_estimator.hpp
-		
 	DEPENDS
-		circuit_breaker
+		
 		mathlib
-		RateControl
 		px4_work_queue
 	)
+

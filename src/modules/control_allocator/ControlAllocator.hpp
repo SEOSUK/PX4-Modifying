@@ -71,6 +71,7 @@
 #include <uORB/topics/servo_angle.h>
 #include <uORB/topics/thrust_command.h>
 #include <uORB/topics/wrench_command.h>
+#include <uORB/topics/center_of_mass.h> // custom
 
 class ControlAllocator : public ModuleBase<ControlAllocator>, public ModuleParams, public px4::ScheduledWorkItem
 {
@@ -143,7 +144,7 @@ private:
 	uORB::Publication<thrust_command_s> _thrust_command_pub{ORB_ID(thrust_command)};
 	uORB::Publication<wrench_command_s> _wrench_command_pub{ORB_ID(wrench_command)};
 	uORB::Subscription _manual_control_setpoint_sub{ORB_ID(manual_control_setpoint)};
-
+	uORB::Subscription _center_of_mass_sub{ORB_ID(center_of_mass)};
 
 
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
@@ -167,6 +168,10 @@ private:
 
 	bool _has_slew_rate{false};
 	float dumi = 0.f;
+
+	float xc = 0.0;
+	float yc = 0.0;
+	float zc = 0.0;
 
 	matrix::Matrix<float, 4, 4> _mix;
 	matrix::Vector<float, 4> _actuator_min; 	///< Minimum actuator values

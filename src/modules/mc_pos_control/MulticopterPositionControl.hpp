@@ -222,6 +222,8 @@ private:
 	uint8_t _heading_reset_counter{0};
 
 	matrix::Vector4f pose_setpoint{0.f, 0.f, 0.f, 0.f};
+	float pose_z_setpoint = 0.f;
+
 	matrix::Vector4f base_setpoint{0.f, 0.f, 0.f, 0.f};
 	matrix::Vector4f manual_setpoint{0.f, 0.f, 0.f, 0.0f};
 

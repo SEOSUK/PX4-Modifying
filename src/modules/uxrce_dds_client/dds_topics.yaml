@@ -101,8 +101,18 @@ publications:
   - topic: /fmu/out/vehicle_acceleration
     type: px4_msgs::msg::VehicleAcceleration
 
+  - topic: /fmu/out/center_of_mass
+    type: px4_msgs::msg::CenterOfMass
+  
+  - topic: /fmu/out/torque_dhat
+    type: px4_msgs::msg::TorqueDhat
+
 # Create uORB::Publication
 subscriptions:
+
+
+  - topic: /fmu/in/custom_control_mode
+    type: px4_msgs::msg::CustomControlMode
 
   - topic: /fmu/in/servo_angle  
     type: px4_msgs::msg::ServoAngle

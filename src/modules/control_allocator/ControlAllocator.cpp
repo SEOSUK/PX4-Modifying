@@ -166,6 +166,16 @@ ControlAllocator::Run()
 
 	}
 
+	center_of_mass_s com_update;
+
+	if(_center_of_mass_sub.update(&com_update)){
+
+		xc = com_update.com_update[0];
+		yc = com_update.com_update[1]; //-0.04f
+		zc = 0.f;//com_update.com_update[2]; 
+
+	}
+
 	
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
@@ -258,9 +268,6 @@ ControlAllocator::update_effectiveness_matrix_if_needed()
 	_control_sp(3) = _thrust_sp(2); // -22.0 : 음수여야함
 
 	// Assign control effectiveness matrix
-	float xc = 0.0;
-	float yc = 0.0;
-	float zc = 0.0;
 	float xi = 0.01;
 	float r2 = sqrt(2);
 	float r_arm = 0.21;
@@ -323,7 +330,7 @@ ControlAllocator::update_effectiveness_matrix_if_needed()
 	
 	for(int i = 0; i<4; ++i){
 		if(_actuator_sp(i) > 55.0f){_actuator_sp(i) = 55.0f;}
-		if(_actuator_sp(i) < 0.f){_actuator_sp(i) = 0.f;}
+		if(_actuator_sp(i) < 2.f){_actuator_sp(i) = 2.f;}
 	}
 
 

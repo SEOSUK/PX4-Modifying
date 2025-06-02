@@ -33,6 +33,7 @@
 
 #pragma once
 
+
 #include <lib/rate_control/rate_control.hpp>
 #include <lib/matrix/matrix/math.hpp>
 #include <lib/perf/perf_counter.h>
@@ -60,6 +61,14 @@
 #include <uORB/topics/vehicle_thrust_setpoint.h>
 #include <uORB/topics/vehicle_torque_setpoint.h>
 
+#include <uORB/topics/custom_control_mode.h> // custom
+#include <uORB/topics/center_of_mass.h> // custom
+#include <uORB/topics/torque_dhat.h> //custom
+
+#include "torque_disturbance_observer.hpp" // custom
+#include "dob_based_com_estimator.hpp" // custom
+
+
 using namespace time_literals;
 
 class MulticopterRateControl : public ModuleBase<MulticopterRateControl>, public ModuleParams, public px4::WorkItem
@@ -76,6 +85,9 @@ public:
 
 	/** @see ModuleBase */
 	static int print_usage(const char *reason = nullptr);
+
+	int print_status(); // custom
+
 
 	bool init();
 
@@ -98,6 +110,7 @@ private:
 	uORB::Subscription _vehicle_land_detected_sub{ORB_ID(vehicle_land_detected)};
 	uORB::Subscription _vehicle_rates_setpoint_sub{ORB_ID(vehicle_rates_setpoint)};
 	uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
+	uORB::Subscription _custom_control_mode_sub{ORB_ID(custom_control_mode)}; // custom
 
 	uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update), 1_s};
 
@@ -108,7 +121,12 @@ private:
 	uORB::Publication<vehicle_rates_setpoint_s>	_vehicle_rates_setpoint_pub{ORB_ID(vehicle_rates_setpoint)};
 	uORB::Publication<vehicle_torque_setpoint_s>	_vehicle_torque_setpoint_pub;
 	uORB::Publication<vehicle_thrust_setpoint_s>	_vehicle_thrust_setpoint_pub;
+	uORB::Publication<center_of_mass_s>	_center_of_mass_pub{ORB_ID(center_of_mass)}; // custom
+	uORB::Publication<torque_dhat_s>	_torque_dhat_pub{ORB_ID(torque_dhat)}; // custom
 
+	center_of_mass_s center_of_mass_update{}; //custom
+	custom_control_mode_s _custom_control_mode{}; // custom
+	torque_dhat_s _torque_dhat{}; //custom
 	vehicle_control_mode_s	_vehicle_control_mode{};
 	vehicle_status_s	_vehicle_status{};
 
@@ -125,6 +143,8 @@ private:
 
 	float _battery_status_scale{0.0f};
 	matrix::Vector3f _thrust_setpoint{};
+
+	matrix::Vector3f _data_check{};
 
 	float _energy_integration_time{0.0f};
 	float _control_energy[4] {};
@@ -158,7 +178,7 @@ private:
 		(ParamFloat<px4::params::MC_ACRO_EXPO_Y>) _param_mc_acro_expo_y,				/**< expo stick curve shape (yaw) */
 		(ParamFloat<px4::params::MC_ACRO_SUPEXPO>) _param_mc_acro_supexpo,		/**< superexpo stick curve shape (roll & pitch) */
 		(ParamFloat<px4::params::MC_ACRO_SUPEXPOY>) _param_mc_acro_supexpoy,		/**< superexpo stick curve shape (yaw) */
-
+		(ParamFloat<px4::params::MC_YAWTRIM>) _param_mc_yaw_trim, // yaw trimming limit
 		(ParamBool<px4::params::MC_BAT_SCALE_EN>) _param_mc_bat_scale_en
 	)
 };

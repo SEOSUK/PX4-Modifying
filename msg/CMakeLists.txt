@@ -46,7 +46,9 @@ set(msg_files
 	ServoCommand.msg
 	ThrustCommand.msg
 	WrenchCommand.msg
-
+	CustomControlMode.msg
+	CenterOfMass.msg
+	TorqueDhat.msg
 
 	ActionRequest.msg
 	ActuatorArmed.msg
