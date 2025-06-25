@@ -52,6 +52,12 @@ void AttitudeControl::setProportionalGain(const matrix::Vector3f &proportional_g
 	}
 }
 
+void AttitudeControl::setDifferentialGain(const matrix::Vector3f &differential_gain)
+{
+	_differential_gain = differential_gain;
+
+}
+
 matrix::Vector3f AttitudeControl::update(const Quatf &q) const
 {
 
@@ -103,6 +109,11 @@ matrix::Vector3f AttitudeControl::update(const Quatf &q) const
 
 	// calculate angular rates setpoint
 	Vector3f rate_setpoint = eq.emult(_proportional_gain);
+
+	rate_setpoint(0) += -eq(0)*_differential_gain(0); // adding attitude d gain
+
+	rate_setpoint(1) += -eq(1)*_differential_gain(1); 
+
 
 	// Feed forward the yaw setpoint rate.
 	// yawspeed_setpoint is the feed forward commanded rotation around the world z-axis,

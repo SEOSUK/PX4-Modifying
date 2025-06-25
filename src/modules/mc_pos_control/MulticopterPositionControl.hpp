@@ -70,6 +70,8 @@
 #include <uORB/topics/vehicle_local_position.h>
 #include <uORB/topics/vehicle_local_position_setpoint.h>
 #include <uORB/topics/manual_control_setpoint.h> // custom
+#include <uORB/topics/custom_control_mode.h> // custom
+
 
 using namespace time_literals;
 
@@ -112,12 +114,15 @@ private:
 	uORB::Subscription _vehicle_land_detected_sub{ORB_ID(vehicle_land_detected)};
 	uORB::Subscription _manual_control_setpoint_sub{ORB_ID(manual_control_setpoint)};
 	uORB::Subscription _vehicle_attitude_sub{ORB_ID(vehicle_attitude)};
+	uORB::Subscription _custom_control_mode_sub{ORB_ID(custom_control_mode)}; // custom
 	
 
 	hrt_abstime _time_stamp_last_loop{0};		/**< time stamp of last loop iteration */
 	hrt_abstime _time_position_control_enabled{0};
 
 	vehicle_control_mode_s _vehicle_control_mode{};
+
+	custom_control_mode_s _custom_control_mode{}; // custom
 
 	vehicle_constraints_s _vehicle_constraints {
 		.timestamp = 0,
@@ -221,6 +226,7 @@ private:
 	uint8_t _z_reset_counter{0};
 	uint8_t _heading_reset_counter{0};
 
+	matrix::Vector3f gain_check;
 	matrix::Vector4f pose_setpoint{0.f, 0.f, 0.f, 0.f};
 	float pose_z_setpoint = 0.f;
 
@@ -233,7 +239,11 @@ private:
 
 	double lat, lon = 0.f;
 	float alt = 0.f;
-	//float alt;
+	float time_count = 0.f;
+	float wave_z = 0.f;
+	//float wave_amp = 0.2f;
+	//float wave_freq = 0.f;
+	float dt_check = 0.f;
 
 	perf_counter_t _cycle_perf{perf_alloc(PC_ELAPSED, MODULE_NAME": cycle time")};
 

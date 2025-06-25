@@ -47,7 +47,7 @@ matrix::Matrix<float, 1,2>  Q_T_C;
  matrix::Matrix<float, 1,1>  Q_T_Z_y;
  
 
-float torque_dob_fc = 10.f; //origin :: 20.f
+float torque_dob_fc = 4.0f; //origin :: 10.f
 float dhat_tau_r = 0.f;
 float dhat_tau_p = 0.f;
 float dhat_tau_y = 0.f;
@@ -58,9 +58,9 @@ float tautilde_y_d =0.f;
 float root2 = sqrtf(2.0f); // root(2) = 1.414 :: damping factor = 0.707
 
 ///// Original MoI /////
-float Jxx = 0.25f;
-float Jyy = 0.25f;
-float Jzz = 0.25f;
+float Jxx = 0.23f; // 0.25
+float Jyy = 0.23f;
+float Jzz = 0.23f;
 
 
 

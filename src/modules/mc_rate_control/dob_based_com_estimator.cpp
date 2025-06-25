@@ -57,7 +57,7 @@ matrix::Vector3f compute_average_com()
 // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 
 matrix::Matrix<float, 3,3> b_F_X_mat; // [F]x
-matrix::Matrix<float, 3,3> J_hat_mat; // body frame J hat 
+matrix::Matrix<float, 3,3> J_hat_mat; // body frame J hat
 
 matrix::Matrix<float, 2,2>  Q_T_A_est;
 matrix::Matrix<float, 2,1>  Q_T_B_est;
@@ -86,12 +86,13 @@ matrix::Vector3f present_com_hat{0.f,0.f,0.f};
 matrix::Vector3f com_hat_dot;
 
 float root2_est = sqrtf(2.0f);
-float torque_dob_fc_est = 10.f; //origin :: 1
-float est_gamma = 0.0003f; // estimator gain
+float torque_dob_fc_est = 4.0f; //origin :: 10
+float est_gamma = 0.01; // estimator gain : origin -> 0.0003f
+float control_hz = 665; //[hz]
 float k = 1.f/0.8f; // voltage drop gain
-float Jxx_est = 0.25f;
-float Jyy_est = 0.25f;
-float Jzz_est = 0.25f;
+float Jxx_est = 0.23f; // 0.25
+float Jyy_est = 0.23f;
+float Jzz_est = 0.23f;
 
 
 
@@ -104,10 +105,10 @@ void constrain_vector3_components(matrix::Vector3f &v)
 
 //void dob_based_com_estimator(matrix::Vector3f torque_dhat, matrix::Vector3f body_force_desired, matrix::Vector3f &present_com_hat, matrix::Vector3f &past_com_hat);
 void dob_based_com_estimator(float dt, matrix::Vector3f torque_dhat, matrix::Vector3f body_force_desired, center_of_mass_s &com_log, matrix::Vector3f &past_com_hat,matrix::Vector3f &com_hat_tilde)
-{   
+{
     float fc2 = pow(torque_dob_fc_est, 2);
 
-    
+
     //========================[1] Q-Filter Definition (Same for all axes)========================//
     Q_T_A_est(0,0) = -root2_est*torque_dob_fc_est; Q_T_A_est(0,1) = -fc2;
     Q_T_A_est(1,0) = 1.0f;                        Q_T_A_est(1,1) = 0.0f;
@@ -116,7 +117,7 @@ void dob_based_com_estimator(float dt, matrix::Vector3f torque_dhat, matrix::Vec
     Q_T_B_est(1,0) = 0.0f;
 
     Q_T_C_est(0,0) = 0.0f;       Q_T_C_est(0,1) = fc2;
-    
+
     //========================[2] X Axis Force===============================================//
 
     Q_T_X_x_dot_est     = Q_T_A_est*Q_T_X_x_est+Q_T_B_est*body_force_desired(0);
@@ -143,7 +144,7 @@ void dob_based_com_estimator(float dt, matrix::Vector3f torque_dhat, matrix::Vec
 
 
     //========================[5] Force LPF Cross Product Matrix ===============================================//
-    b_F_X_mat(0,0) = 0.f;          b_F_X_mat(0,1) = -b_F_LPF(2);    b_F_X_mat(0,2) = b_F_LPF(1); 
+    b_F_X_mat(0,0) = 0.f;          b_F_X_mat(0,1) = -b_F_LPF(2);    b_F_X_mat(0,2) = b_F_LPF(1);
     b_F_X_mat(1,0) = b_F_LPF(2);   b_F_X_mat(1,1) = 0.f;            b_F_X_mat(1,2) =-b_F_LPF(0);
     b_F_X_mat(2,0) =-b_F_LPF(1);   b_F_X_mat(2,1) = b_F_LPF(0);     b_F_X_mat(2,2) = 0.f;
 
@@ -152,22 +153,22 @@ void dob_based_com_estimator(float dt, matrix::Vector3f torque_dhat, matrix::Vec
     MoI(0,0) = Jxx_est; MoI(0,1) = 0.f;     MoI(0,2) = 0.f;
     MoI(1,0) = 0.f;     MoI(1,1) = Jyy_est; MoI(1,2) = 0.f;
     MoI(2,0) = 0.f;     MoI(2,1) = 0.f;     MoI(2,2) = Jzz_est;
-    
+
     matrix::geninv(MoI, MoI_inv);
 
     // A = k * MoI_inv * b_F_X_mat;
     A = MoI_inv * b_F_X_mat;
 
     //========================[7] estimated com integration ========================================//
-    
+
     com_hat_tilde = present_com_hat - past_com_hat;
 
     com_hat_dot = A.transpose() * torque_dhat;
 
-    past_com_hat += est_gamma*com_hat_dot;
+    past_com_hat += est_gamma * com_hat_dot / control_hz;
 
     constrain_vector3_components(past_com_hat);
-    
+
     // dt 기반 평균 윈도우 크기 계산 (최초 한 번만)
     static constexpr float com_avg_duration_sec = 3.0f;
     if (com_avg_window_size == 0 && dt > 1e-5f) {
@@ -182,75 +183,21 @@ void dob_based_com_estimator(float dt, matrix::Vector3f torque_dhat, matrix::Vec
     }
 
     /*
-    b_F_X_mat(0,0) = 0.f;                   b_F_X_mat(0,1) = -body_force_desired(2);        b_F_X_mat(0,2) = body_force_desired(1); 
+    b_F_X_mat(0,0) = 0.f;                   b_F_X_mat(0,1) = -body_force_desired(2);        b_F_X_mat(0,2) = body_force_desired(1);
     b_F_X_mat(1,0) = body_force_desired(2); b_F_X_mat(1,1) = 0.f;                           b_F_X_mat(1,2) =-body_force_desired(0);
     b_F_X_mat(2,0) =-body_force_desired(1); b_F_X_mat(2,1) = body_force_desired(0);         b_F_X_mat(2,2) = 0.f;
     */
-    
+
     // 평균 및 필터링 수행
     com_target_fixed = compute_average_com();
-    
+
     com_update_filtered = com_update_alpha * com_target_fixed + (1.f - com_update_alpha) * com_update_filtered;
 
     // === com_update가 com_update_filtered를 따라감 ===
 
     com_update = com_update_alpha2 * com_update_filtered + (1.f - com_update_alpha2) * com_update;
-    
 
-    // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 
-    // === com_update가 com_update_filtered를 따라감 ===
-    /*
-    if (!com_xy_fixed) {
-        // (1) XY 업데이트: 먼저 com_update(0), com_update(1) 수렴 감지
-        com_update(0) = com_update_alpha2 * com_update_filtered(0) + (1.f - com_update_alpha2) * com_update(0);
-        com_update(1) = com_update_alpha2 * com_update_filtered(1) + (1.f - com_update_alpha2) * com_update(1);
-
-        float dx = fabsf(com_update(0) - com_xy_last(0));
-        float dy = fabsf(com_update(1) - com_xy_last(1));
-        if (loop_count > MIN_COUNT_BEFORE_STABILITY_CHECK) {
-            
-        if (dx < XY_STABLE_EPSILON && dy < XY_STABLE_EPSILON) {
-            stable_counter_xy++;
-            } else {
-            stable_counter_xy = 0;
-            }
-
-        if (stable_counter_xy >= STABLE_COUNT_THRESHOLD) {
-            com_xy_fixed = true;}
-        }
-
-        com_xy_last(0) = com_update(0);
-        com_xy_last(1) = com_update(1);
-        
-        // z는 업데이트 하지 않음
-        com_update(2) = 0.0f; // 또는 이전 값 유지
-    } else {
-        // (2) XY는 고정 상태. torque_dhat 안정 시 Z축 업데이트 시작
-        if (!allow_z_update) {
-            if (fabsf(torque_dhat(0)) < TORQUE_THRESHOLD_XY &&
-                fabsf(torque_dhat(1)) < TORQUE_THRESHOLD_XY) {
-                allow_z_update = true;
-            }
-        }
-
-        // XY는 고정값 유지
-        com_update(0) = com_xy_last(0);
-        com_update(1) = com_xy_last(1);
-
-        // Z축 업데이트 조건 달성 시에만 업데이트
-        if (allow_z_update) {
-            com_update(2) = com_update_alpha2 * com_update_filtered(2) + (1.f - com_update_alpha2) * com_update(2);
-        }
-    }
-    loop_count++;
-    if(loop_count>LOOP_COUNT_MAX) // 약 10초)
-    {
-
-        loop_count = LOOP_COUNT_MAX;
-    }*/
-
-    
     com_log.present_com_hat[0] = com_update_filtered(0); // after filtering
     com_log.present_com_hat[1] = com_update_filtered(1);
     com_log.present_com_hat[2] = com_update_filtered(2);
@@ -264,10 +211,10 @@ void dob_based_com_estimator(float dt, matrix::Vector3f torque_dhat, matrix::Vec
     com_log.com_tilde[2] = com_hat_tilde(2);
 
 
-    
+
     com_log.com_update[0] = com_update(0); // for update on control allocator matrix
-    com_log.com_update[1] = com_update(1); 
-    com_log.com_update[2] = com_update(2); 
-    
+    com_log.com_update[1] = com_update(1);
+    com_log.com_update[2] = com_update(2);
+
 
 }

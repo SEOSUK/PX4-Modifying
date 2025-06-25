@@ -53,6 +53,18 @@
 PARAM_DEFINE_FLOAT(MC_ROLL_P, 6.5f); // 6.5
 
 /**
+ * Roll D gain
+ *
+ * Roll differential gain, i.e. desired angular speed in rad/s for error 1 rad.
+ *
+ * @min 0.0
+ * @max 12
+ * @decimal 2
+ * @increment 0.1
+ * @group Multicopter Attitude Control
+ */
+PARAM_DEFINE_FLOAT(MC_ROLL_D, 0.0f); // 0.05 past
+/**
  * Pitch P gain
  *
  * Pitch proportional gain, i.e. desired angular speed in rad/s for error 1 rad.
@@ -64,7 +76,20 @@ PARAM_DEFINE_FLOAT(MC_ROLL_P, 6.5f); // 6.5
  * @group Multicopter Attitude Control
  */
 PARAM_DEFINE_FLOAT(MC_PITCH_P, 6.5f); // 6.5
- 
+
+/**
+ * Pitch D gain
+ *
+ * Pitch differential gain, i.e. desired angular speed in rad/s for error 1 rad.
+ *
+ * @min 0.0
+ * @max 12
+ * @decimal 2
+ * @increment 0.1
+ * @group Multicopter Attitude Control
+ */
+
+PARAM_DEFINE_FLOAT(MC_PITCH_D, 0.0f); // 0.1
 /**
  * Yaw P gain
  *
@@ -76,7 +101,20 @@ PARAM_DEFINE_FLOAT(MC_PITCH_P, 6.5f); // 6.5
  * @increment 0.1
  * @group Multicopter Attitude Control
  */
-PARAM_DEFINE_FLOAT(MC_YAW_P, 2.8f); // 2.8
+PARAM_DEFINE_FLOAT(MC_YAW_P, 1.4f); // 1.4
+
+/**
+ * Yaw D gain
+ *
+ * Roll differential gain, i.e. desired angular speed in rad/s for error 1 rad.
+ *
+ * @min 0.0
+ * @max 12
+ * @decimal 2
+ * @increment 0.1
+ * @group Multicopter Attitude Control
+ */
+PARAM_DEFINE_FLOAT(MC_YAW_D, 0.0f); //0.01
 
 /**
  * Yaw weight

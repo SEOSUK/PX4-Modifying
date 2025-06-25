@@ -187,7 +187,7 @@ void PositionControl::_positionControl()
 
 	Vector3f vel_sp_position;
 
-	vel_sp_position(0) = (_pos_sp(0) - _pos(0))*static_cast<float>(1.0) - _vel(0)*static_cast<float>(0.0);
+	vel_sp_position(0) = (_pos_sp(0) - _pos(0))*static_cast<float>(1.0) - _vel(0)*static_cast<float>(0.0);  //SEUK 여기는 하드코딩 되어있음.
 	vel_sp_position(1) = (_pos_sp(1) - _pos(1))*static_cast<float>(1.0) - _vel(1)*static_cast<float>(0.0);
 	vel_sp_position(2) = (_pos_sp(2) - _pos(2))*static_cast<float>(0.5) - _vel(2)*static_cast<float>(0.1);
 	// pz : 1,   dz : 0.05
@@ -237,13 +237,16 @@ void PositionControl::_velocityControl(const float dt) // 사실상 여기가 �
 	// Vector3f acc_sp_velocity = vel_error.emult(_gain_vel_p) - _vel_dot.emult(_gain_vel_d);
 	Vector3f acc_sp_velocity;
 	
-	acc_sp_velocity(0) = vel_error(0)*(static_cast<float>(1.0)) - _vel_dot(0)*(static_cast<float>(0.0));
-	acc_sp_velocity(1) = vel_error(1)*(static_cast<float>(1.0)) - _vel_dot(1)*(static_cast<float>(0.0));
-	acc_sp_velocity(2) = vel_error(2)*(static_cast<float>(0.2)) - _vel_dot(2)*(static_cast<float>(0.01));
+	acc_sp_velocity(0) = vel_error(0)*(static_cast<float>(1.0001)) - _vel_dot(0)*(static_cast<float>(0.0));
+	acc_sp_velocity(1) = vel_error(1)*(static_cast<float>(1.0001)) - _vel_dot(1)*(static_cast<float>(0.0));
+	acc_sp_velocity(2) = vel_error(2)*(static_cast<float>(0.1)) - _vel_dot(2)*(static_cast<float>(0.02));
+	
+	// acl xy 
+	// Pxy = 2.0 --> fast performance
 
 	// acl_z 
-	// Pz = 0.2, Dz = 0.01
-	// 
+	// Pz = 0.2, Dz = 0.01 --> good performance
+	// Pz = 0.4, Dz = 0.02 
 
 	// No control input from setpoints or corresponding states which are NAN	
 	// acc_sp_velocity가 NAN값이 아니면 _acc_sp에 값을 더해주는 함수

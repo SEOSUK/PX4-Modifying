@@ -77,6 +77,8 @@ public:
 	/** @see ModuleBase */
 	static int print_usage(const char *reason = nullptr);
 
+	int print_status();
+	
 	bool init();
 
 private:
@@ -117,6 +119,8 @@ private:
 	perf_counter_t  _loop_perf;             /**< loop duration performance counter */
 
 	matrix::Vector3f _thrust_setpoint_body; /**< body frame 3D thrust vector */
+	matrix::Vector3f _gain_check_P;
+	matrix::Vector3f _gain_check_D;
 
 	float _man_yaw_sp{0.f};                 /**< current yaw setpoint in manual mode */
 	float _man_tilt_max;                    /**< maximum tilt allowed for manual flight [rad] */
@@ -146,7 +150,11 @@ private:
 
 		(ParamFloat<px4::params::MC_ROLL_P>)        _param_mc_roll_p,
 		(ParamFloat<px4::params::MC_PITCH_P>)       _param_mc_pitch_p,
+		(ParamFloat<px4::params::MC_ROLL_D>)        _param_mc_roll_d,
+		(ParamFloat<px4::params::MC_PITCH_D>)       _param_mc_pitch_d,
+
 		(ParamFloat<px4::params::MC_YAW_P>)         _param_mc_yaw_p,
+		(ParamFloat<px4::params::MC_YAW_D>)         _param_mc_yaw_d,
 		(ParamFloat<px4::params::MC_YAW_WEIGHT>)    _param_mc_yaw_weight,
 
 		(ParamFloat<px4::params::MC_ROLLRATE_MAX>)  _param_mc_rollrate_max,

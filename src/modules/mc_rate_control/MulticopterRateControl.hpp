@@ -130,6 +130,7 @@ private:
 	vehicle_control_mode_s	_vehicle_control_mode{};
 	vehicle_status_s	_vehicle_status{};
 
+	matrix::Vector3f gain_check;
 	bool _landed{true};
 	bool _maybe_landed{true};
 
@@ -142,6 +143,7 @@ private:
 	matrix::Vector3f _rates_setpoint{};
 
 	float _battery_status_scale{0.0f};
+
 	matrix::Vector3f _thrust_setpoint{};
 
 	matrix::Vector3f _data_check{};

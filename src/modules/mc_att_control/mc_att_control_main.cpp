@@ -89,8 +89,14 @@ MulticopterAttitudeControl::parameters_updated()
 	// Store some of the parameters in a more convenient way & precompute often-used values
 	_attitude_control.setProportionalGain(Vector3f(_param_mc_roll_p.get(), _param_mc_pitch_p.get(), _param_mc_yaw_p.get()),
 					      _param_mc_yaw_weight.get());
+						  
+	_gain_check_P = Vector3f(_param_mc_roll_p.get(), _param_mc_pitch_p.get(), _param_mc_yaw_p.get());
 
-	// angular rate limits
+	_attitude_control.setDifferentialGain(Vector3f(_param_mc_roll_d.get(), _param_mc_pitch_d.get(), _param_mc_yaw_d.get()));
+
+	_gain_check_D = Vector3f(_param_mc_roll_d.get(), _param_mc_pitch_d.get(), _param_mc_yaw_d.get());
+
+	// angular rate limits	
 	using math::radians;
 	_attitude_control.setRateLimit(Vector3f(radians(_param_mc_rollrate_max.get()), radians(_param_mc_pitchrate_max.get()),
 						radians(_param_mc_yawrate_max.get())));
@@ -499,6 +505,14 @@ https://www.research-collection.ethz.ch/bitstream/handle/20.500.11850/154099/eth
 	return 0;
 }
 
+int MulticopterAttitudeControl::print_status()
+{
+	PX4_INFO("Running");
+
+	PX4_INFO("roll P : %f | pitch P : %f | yaw P : %f", (double)_gain_check_P(0), (double)_gain_check_P(1), (double)_gain_check_P(2));
+	PX4_INFO("roll D : %f | pitch D : %f | yaw D : %f", (double)_gain_check_D(0), (double)_gain_check_D(1), (double)_gain_check_D(2));
+	return 0;
+}
 
 /**
  * Multicopter attitude control app start / stop handling function

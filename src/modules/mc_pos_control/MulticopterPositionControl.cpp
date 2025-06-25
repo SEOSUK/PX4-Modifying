@@ -157,7 +157,9 @@ void MulticopterPositionControl::parameters_update(bool force)
 			Vector3f(_param_mpc_xy_vel_p_acc.get(), _param_mpc_xy_vel_p_acc.get(), _param_mpc_z_vel_p_acc.get()),
 			Vector3f(_param_mpc_xy_vel_i_acc.get(), _param_mpc_xy_vel_i_acc.get(), _param_mpc_z_vel_i_acc.get()),
 			Vector3f(_param_mpc_xy_vel_d_acc.get(), _param_mpc_xy_vel_d_acc.get(), _param_mpc_z_vel_d_acc.get()));
-		
+			
+			gain_check = {_param_mpc_xy_vel_p_acc.get(), _param_mpc_xy_vel_p_acc.get(), _param_mpc_z_vel_p_acc.get()};
+
 		// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 		// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 		// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
@@ -369,6 +371,8 @@ void MulticopterPositionControl::Run()
 
 	setDt(dt);
 
+	// dt_check = dt;
+
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
@@ -392,6 +396,9 @@ void MulticopterPositionControl::Run()
 
 	_vehicle_control_mode_sub.update(&_vehicle_control_mode); // For vehicle armed state check
 	
+	_custom_control_mode_sub.update(&_custom_control_mode);
+
+
 	manual_control_setpoint_s rpyz_cmd;
 
 	if (_manual_control_setpoint_sub.update(&rpyz_cmd)){
@@ -405,7 +412,7 @@ void MulticopterPositionControl::Run()
 
 
 	// if((double)manual_setpoint(2) > 0.0){manual_setpoint(2) = 0.0;}
-	float altitude_limit = 0.6f;
+	float altitude_limit = 0.8f;
 
 	if(manual_setpoint(2)<0.f){pose_z_setpoint -= 0.001f;}
 	else if(manual_setpoint(2)>0.f){pose_z_setpoint += 0.001f;}
@@ -445,7 +452,49 @@ void MulticopterPositionControl::Run()
 		base_setpoint(3) = _states.yaw;
 	}
 
-	pose_setpoint(0) = base_setpoint(0) + manual_setpoint(0);
+	/*
+	if(_custom_control_mode.sine_motion_flag){
+
+		wave_z = wave_amp*sin(wave_freq*time_count);
+		time_count += dt;
+	}
+	else{
+		wave_z = 0.f;
+		time_count = 0.f;
+	}*/
+
+	
+	
+	//float wave_duration = 3.0f;       // 전체 파형 주기 (초)
+	
+	/*
+	if (_custom_control_mode.sine_motion_flag) {
+
+		float phase = fmodf(time_count / wave_duration, 1.0f);  // 주기적 phase [0, 1)
+
+		// 반복 가능한 부드러운 코사인 파형: 0.3 * cos(2π * t/T)
+		wave_z = wave_amp * sinf(2.f * (float)M_PI * phase);  // 시작: +0.3 → 0 → -0.3 → ...
+
+		time_count += dt;
+
+	} else {
+		wave_z = 0.f;
+		time_count = 0.f;
+	}*/
+
+	//float segment_duration = wave_duration / 2.f;  // 각 단계는 전체의 1/4 주기
+	//float step_amp = 0.1f;
+
+	if (_custom_control_mode.sine_motion_flag) {
+
+		wave_z = 1.0f;
+
+	} else {
+		wave_z = 0.f;
+		time_count = 0.f;
+	}
+
+	pose_setpoint(0) = base_setpoint(0) + manual_setpoint(0) + wave_z;
 	pose_setpoint(1) = base_setpoint(1) + manual_setpoint(1);
 	//pose_setpoint(2) = base_setpoint(2) + manual_setpoint(2);
 
@@ -569,13 +618,14 @@ int MulticopterPositionControl::custom_command(int argc, char *argv[])
 int MulticopterPositionControl::print_status()
 {
 	PX4_INFO("Running");
-	
+	PX4_INFO("vx P : %f | vy P : %f | vz P : %f", (double)gain_check(0), (double)gain_check(1), (double)gain_check(2));
 	matrix::Vector3f fxyz;
 	fxyz = _control.getThrustSetpoint();
 	PX4_INFO("thrust_cmd = Fx : %f| Fy : %f| Fz : %f|",(double)fxyz(0),(double)fxyz(1),(double)fxyz(2));
 	
 	PX4_INFO("XYZ = x : %f| y : %f| z : %f|",(double)lat,(double)lon,(double)alt);
 
+	// PX4_INFO("dt check = %f", (double)dt_check);
 	//PX4_INFO("armed_flag check : %s", _vehicle_control_mode.flag_armed ? "true" : "false" );
 	
 	return 0;
