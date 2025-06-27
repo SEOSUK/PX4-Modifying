@@ -90,6 +90,14 @@ public:
 
 
 	bool init();
+	matrix::Vector3f desired_tau_PID_rpy;
+	matrix::Vector3f tau_rpy_tilde;
+
+
+	matrix::Vector3f torque_dhat;
+	matrix::Vector3f past_com_hat;
+	matrix::Vector3f com_hat_tilde;
+
 
 private:
 	void Run() override;
@@ -145,6 +153,8 @@ private:
 	float _battery_status_scale{0.0f};
 
 	matrix::Vector3f _thrust_setpoint{};
+
+
 
 	matrix::Vector3f _data_check{};
 

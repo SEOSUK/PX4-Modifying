@@ -104,7 +104,7 @@ ControlAllocator::init()
 void
 ControlAllocator::parameters_updated()
 {
-		
+
 	update_effectiveness_matrix_if_needed();
 }
 
@@ -122,7 +122,7 @@ ControlAllocator::Run()
 		exit_and_cleanup();
 		return;
 	}
-	
+
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 
@@ -172,11 +172,11 @@ ControlAllocator::Run()
 
 		xc = com_update.com_update[0];
 		yc = com_update.com_update[1]; //-0.04f
-		zc = 0.f;//com_update.com_update[2]; 
+		zc = 0.f;//com_update.com_update[2];
 
 	}
 
-	
+
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 
@@ -202,7 +202,7 @@ ControlAllocator::Run()
 	// has not been updated for more than 5ms
 	if (_vehicle_thrust_setpoint_sub.update(&vehicle_thrust_setpoint)) {
 		_thrust_sp = matrix::Vector3f(vehicle_thrust_setpoint.xyz);
-		
+
 		if (dt > 5_ms) {
 			do_update = true;
 			_timestamp_sample = vehicle_thrust_setpoint.timestamp_sample;
@@ -260,9 +260,9 @@ ControlAllocator::update_effectiveness_matrix_if_needed()
 {
 	// control wrench update
 	_control_sp(0) = _torque_sp(0);
-	
+
 	_control_sp(1) = _torque_sp(1);
-	
+
 	_control_sp(2) = _torque_sp(2);
 
 	_control_sp(3) = _thrust_sp(2); // -22.0 : 음수여야함
@@ -279,12 +279,12 @@ ControlAllocator::update_effectiveness_matrix_if_needed()
 	float th4 = 0.0; //rad*/
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ custom_part ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 	// 현재 모터는 1(CW),2(CCW),3(CW),4(CCW) 반시계방향으로 왼쪽 맨위 부터 1번
-	// 
-	// (CW) 	(CCW)	  
+	//
+	// (CW)    (CCW)
 	//  m1      m4
 	//    +	  +
-	//		+
-	//	  +   + 
+	//      +
+	//    +   +
 	//  m2     m3
 	//(CCW)    (CW)
 	//
@@ -293,17 +293,17 @@ ControlAllocator::update_effectiveness_matrix_if_needed()
 	// 1x1
 	_custom_effectiveness(0,0) = (yc+r_arm/r2)*cosf(_servo_ang(0))+(-(l_servo-zc)+xi)*sinf(_servo_ang(0))/r2;
 	// 1x2
-	_custom_effectiveness(0,1) = (yc+r_arm/r2)*cosf(_servo_ang(1))+((l_servo-zc)-xi)*sinf(_servo_ang(1))/r2; 
+	_custom_effectiveness(0,1) = (yc+r_arm/r2)*cosf(_servo_ang(1))+((l_servo-zc)-xi)*sinf(_servo_ang(1))/r2;
 	// 1x3
-	_custom_effectiveness(0,2) = (yc-r_arm/r2)*cosf(_servo_ang(2))+((l_servo-zc)-xi)*sinf(_servo_ang(2))/r2;  
+	_custom_effectiveness(0,2) = (yc-r_arm/r2)*cosf(_servo_ang(2))+((l_servo-zc)-xi)*sinf(_servo_ang(2))/r2;
 	// 1x4
 	_custom_effectiveness(0,3) = (yc-r_arm/r2)*cosf(_servo_ang(3))+(-(l_servo-zc)+xi)*sinf(_servo_ang(3))/r2;
 	// 2x1
 	_custom_effectiveness(1,0) =-(xc-r_arm/r2)*cosf(_servo_ang(0))+((l_servo-zc)+xi)*sinf(_servo_ang(0))/r2;
 	// 2x2
-	_custom_effectiveness(1,1) =-(xc+r_arm/r2)*cosf(_servo_ang(1))+((l_servo-zc)+xi)*sinf(_servo_ang(1))/r2; 
+	_custom_effectiveness(1,1) =-(xc+r_arm/r2)*cosf(_servo_ang(1))+((l_servo-zc)+xi)*sinf(_servo_ang(1))/r2;
 	// 2x3
-	_custom_effectiveness(1,2) =-(xc+r_arm/r2)*cosf(_servo_ang(2))+(-(l_servo-zc)-xi)*sinf(_servo_ang(2))/r2; 
+	_custom_effectiveness(1,2) =-(xc+r_arm/r2)*cosf(_servo_ang(2))+(-(l_servo-zc)-xi)*sinf(_servo_ang(2))/r2;
 	// 2x4
 	_custom_effectiveness(1,3) =-(xc-r_arm/r2)*cosf(_servo_ang(3))+(-(l_servo-zc)-xi)*sinf(_servo_ang(3))/r2;
 	// 3x1
@@ -314,20 +314,20 @@ ControlAllocator::update_effectiveness_matrix_if_needed()
 	_custom_effectiveness(2,2) =-xi*cosf(_servo_ang(2))+((xc-yc)/r2)*sinf(_servo_ang(2));
 	// 3x4
 	_custom_effectiveness(2,3) = xi*cosf(_servo_ang(3))+(-(xc+yc)/r2)*sinf(_servo_ang(3));
-	
+
 	// 4x1
-	_custom_effectiveness(3,0) =-cosf(_servo_ang(0)); 
+	_custom_effectiveness(3,0) =-cosf(_servo_ang(0));
 	// 4x2
-	_custom_effectiveness(3,1) =-cosf(_servo_ang(1)); 
+	_custom_effectiveness(3,1) =-cosf(_servo_ang(1));
 	// 4x3
-	_custom_effectiveness(3,2) =-cosf(_servo_ang(2)); 
+	_custom_effectiveness(3,2) =-cosf(_servo_ang(2));
 	// 4x4
 	_custom_effectiveness(3,3) =-cosf(_servo_ang(3));
 
 	matrix::geninv(_custom_effectiveness, _mix);
 
 	_actuator_sp = _mix * (_control_sp);
-	
+
 	for(int i = 0; i<4; ++i){
 		if(_actuator_sp(i) > 55.0f){_actuator_sp(i) = 55.0f;}
 		if(_actuator_sp(i) < 2.f){_actuator_sp(i) = 2.f;}
@@ -355,17 +355,17 @@ ControlAllocator::publish_actuator_controls()
 	actuator_motors.timestamp = hrt_absolute_time();
 	actuator_motors.timestamp_sample = _timestamp_sample;
 
-	thrust_command_s thrust_commands; // custom 
+	thrust_command_s thrust_commands; // custom
 
 	actuator_motors.reversible_flags = _param_r_rev.get();
 
 	// motors
-	
+
 	float force_to_pwm_scale_0 = force_to_pwm_scale(_actuator_sp(0));
 	float force_to_pwm_scale_1 = force_to_pwm_scale(_actuator_sp(1));
 	float force_to_pwm_scale_2 = force_to_pwm_scale(_actuator_sp(2));
 	float force_to_pwm_scale_3 = force_to_pwm_scale(_actuator_sp(3));
-	
+
 	if(actuator_motors.control[0] != NAN){thrust_commands.thrust_command[0] = _actuator_sp(0);}
 	if(actuator_motors.control[1] != NAN){thrust_commands.thrust_command[1] = _actuator_sp(1);}
 	if(actuator_motors.control[2] != NAN){thrust_commands.thrust_command[2] = _actuator_sp(2);}
@@ -376,13 +376,13 @@ ControlAllocator::publish_actuator_controls()
 	actuator_motors.control[2] = force_to_pwm_scale_2;
 	actuator_motors.control[3] = force_to_pwm_scale_3;
 
-	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //		
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
-	
+	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+
 
 	_actuator_motors_pub.publish(actuator_motors);
 	_thrust_command_pub.publish(thrust_commands); //custom
-	
+
 }
 
 // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
@@ -422,7 +422,7 @@ int ControlAllocator::print_status()
 	PX4_INFO("Dumi : %f", (double)dumi);
 
 	PX4_INFO("torque_cmd = roll : %f| pitch : %f| yaw : %f| fz : %f|",(double)_control_sp(0),(double)_control_sp(1),(double)_control_sp(2),(double)_control_sp(3));
-	
+
 	// Print perf
 	perf_print_counter(_loop_perf);
 

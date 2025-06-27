@@ -305,38 +305,41 @@ MulticopterRateControl::Run()
 			vehicle_torque_setpoint_s vehicle_torque_setpoint{};
 
 			_thrust_setpoint.copyTo(vehicle_thrust_setpoint.xyz);
-			vehicle_torque_setpoint.xyz[0] = PX4_ISFINITE(att_control(0)) ? att_control(0) : 0.f;
-			vehicle_torque_setpoint.xyz[1] = PX4_ISFINITE(att_control(1)) ? att_control(1) : 0.f;
-			vehicle_torque_setpoint.xyz[2] = PX4_ISFINITE(att_control(2)) ? att_control(2) : 0.f;
-
-			// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
-			// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ Torque DOB Logic loop closing ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
-			// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
-			matrix::Vector3f desired_tau_rpy;
-			Vector3f tau_rpy_tilde;
 
 			_torque_dhat.timestamp = hrt_absolute_time();
 
-			if(_custom_control_mode.disturbance_observer_flag){
-				// void torque_DOB(float dt, matrix::Vector3f tau_rpy_desired, matrix::Vector3f imu_omega)
-				// dob 는 어떻게 동작해줘야 하나?
-				// 1. switch로 on/off??
-				// 2.
-				desired_tau_rpy(0) = vehicle_torque_setpoint.xyz[0];
-				desired_tau_rpy(1) = vehicle_torque_setpoint.xyz[1];
-				desired_tau_rpy(2) = vehicle_torque_setpoint.xyz[2];
+			// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+			// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ Torque DOB Logic loop closing [SEUK]ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+			// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 
-				torque_DOB(dt, desired_tau_rpy, rates, tau_rpy_tilde, _torque_dhat);
+
+			desired_tau_PID_rpy(0) = PX4_ISFINITE(att_control(0)) ? att_control(0) : 0.f;
+			desired_tau_PID_rpy(1) = PX4_ISFINITE(att_control(1)) ? att_control(1) : 0.f;
+			desired_tau_PID_rpy(2) = PX4_ISFINITE(att_control(2)) ? att_control(2) : 0.f;
+
+
+			if(_custom_control_mode.disturbance_observer_flag)
+			{
+				torque_DOB(dt, desired_tau_PID_rpy, rates, tau_rpy_tilde, _torque_dhat, true);
 
 				vehicle_torque_setpoint.xyz[0] = tau_rpy_tilde(0);
 				vehicle_torque_setpoint.xyz[1] = tau_rpy_tilde(1);
 				vehicle_torque_setpoint.xyz[2] = tau_rpy_tilde(2);
-			}else{
-				vehicle_torque_setpoint.xyz[0] = PX4_ISFINITE(att_control(0)) ? att_control(0) : 0.f;
-				vehicle_torque_setpoint.xyz[1] = PX4_ISFINITE(att_control(1)) ? att_control(1) : 0.f;
-				vehicle_torque_setpoint.xyz[2] = PX4_ISFINITE(att_control(2)) ? att_control(2) : 0.f;
+
+			}
+			else
+			{
+				torque_DOB(dt, desired_tau_PID_rpy, rates, tau_rpy_tilde, _torque_dhat, false);
+
+				vehicle_torque_setpoint.xyz[0] = desired_tau_PID_rpy(0);
+				vehicle_torque_setpoint.xyz[1] = desired_tau_PID_rpy(1);
+				vehicle_torque_setpoint.xyz[2] = desired_tau_PID_rpy(2);
+
 			}
 
+			Vector3f dhat_vec(_torque_dhat.xyz[0],
+					_torque_dhat.xyz[1],
+					_torque_dhat.xyz[2]);
 			_torque_dhat_pub.publish(_torque_dhat);
 
 
@@ -344,18 +347,13 @@ MulticopterRateControl::Run()
 			// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ Torque DOB Logic [N.O] loop closing by SEUK ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 			// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 
-			// matrix::Vector3f desired_tau_rpy;
-			// Vector3f tau_rpy_tilde;
-
-			// _torque_dhat.timestamp = hrt_absolute_time();
-
 			// if(_custom_control_mode.disturbance_observer_flag){
 
-			// 	desired_tau_rpy(0) = vehicle_torque_setpoint.xyz[0];
-			// 	desired_tau_rpy(1) = vehicle_torque_setpoint.xyz[1];
-			// 	desired_tau_rpy(2) = vehicle_torque_setpoint.xyz[2];
+			// 	desired_tau_PID_rpy(0) = vehicle_torque_setpoint.xyz[0];
+			// 	desired_tau_PID_rpy(1) = vehicle_torque_setpoint.xyz[1];
+			// 	desired_tau_PID_rpy(2) = vehicle_torque_setpoint.xyz[2];
 
-			// 	torque_DOB(dt, desired_tau_rpy, rates, tau_rpy_tilde, _torque_dhat);
+			// 	torque_DOB(dt, desired_tau_PID_rpy, rates, tau_rpy_tilde, _torque_dhat);
 			// }
 
 			// _torque_dhat_pub.publish(_torque_dhat);
@@ -367,8 +365,6 @@ MulticopterRateControl::Run()
 			// center_of_mass_s center_of_mass_update;
 			center_of_mass_update.timestamp = hrt_absolute_time();
 
-			matrix::Vector3f past_com_hat;
-			matrix::Vector3f com_hat_tilde;
 
 			if(_custom_control_mode.custom_mode_flag){
 
@@ -376,35 +372,19 @@ MulticopterRateControl::Run()
 				// tau_rpy_tilde = tau_r - dhat_tau_r --> dhat_tau_r = tau_r - tau_rpy_tilde
 
 				// second order low pass filter( _thrust_setpoint) --> same hz dob Q filter hz
-				dob_based_com_estimator(dt, desired_tau_rpy - tau_rpy_tilde, _thrust_setpoint, center_of_mass_update, past_com_hat, com_hat_tilde);
+				dob_based_com_estimator(dt, dhat_vec, _thrust_setpoint, center_of_mass_update, past_com_hat, com_hat_tilde);
 
 
 			}else{
 
-				matrix::Vector3f desired_tau_rpy_zero;
+				matrix::Vector3f desired_tau_PID_rpy_zero;
 				Vector3f tau_rpy_tilde_zero;
 				Vector3f _thrust_setpoint_zero;
 				Vector3f past_com_hat_zero;
 				Vector3f com_hat_tilde_zero;
 
-				dob_based_com_estimator(dt, desired_tau_rpy_zero,tau_rpy_tilde_zero,center_of_mass_update,past_com_hat_zero,com_hat_tilde_zero );
-				/*
-				center_of_mass_update.present_com_hat[0] = 0.f; // after filtering
-				center_of_mass_update.present_com_hat[1] = 0.f;
-				center_of_mass_update.present_com_hat[2] = 0.f;
+				dob_based_com_estimator(dt, desired_tau_PID_rpy_zero,tau_rpy_tilde_zero,center_of_mass_update,past_com_hat_zero,com_hat_tilde_zero );
 
-				center_of_mass_update.past_com_hat[0] = 0.f; // before filtering
-				center_of_mass_update.past_com_hat[1] = 0.f;
-				center_of_mass_update.past_com_hat[2] = 0.f;
-
-				center_of_mass_update.com_tilde[0] = 0.f; // present_com_hat - com_update
-				center_of_mass_update.com_tilde[1] = 0.f;
-				center_of_mass_update.com_tilde[2] = 0.f;
-
-				center_of_mass_update.com_update[0] = 0.f; // for update on control allocator matrix
-				center_of_mass_update.com_update[1] = 0.f;
-				center_of_mass_update.com_update[2] = 0.f;
-				*/
 
 			}
 

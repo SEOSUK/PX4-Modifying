@@ -87,7 +87,7 @@ matrix::Vector3f com_hat_dot;
 
 float root2_est = sqrtf(2.0f);
 float torque_dob_fc_est = 4.0f; //origin :: 10
-float est_gamma = 0.01; // estimator gain : origin -> 0.0003f
+float est_gamma = 0.0001; // estimator gain : origin -> 0.0003f
 float control_hz = 665; //[hz]
 float k = 1.f/0.8f; // voltage drop gain
 float Jxx_est = 0.23f; // 0.25
@@ -161,11 +161,12 @@ void dob_based_com_estimator(float dt, matrix::Vector3f torque_dhat, matrix::Vec
 
     //========================[7] estimated com integration ========================================//
 
-    com_hat_tilde = present_com_hat - past_com_hat;
+    com_hat_tilde = present_com_hat - past_com_hat; // SEUK 이거왜있는지 모르겠음
 
-    com_hat_dot = A.transpose() * torque_dhat;
+    com_hat_dot = A.transpose() * torque_dhat;  //SEUK 부호 이상함
 
-    past_com_hat += est_gamma * com_hat_dot / control_hz;
+    past_com_hat += est_gamma * com_hat_dot / control_hz;   // SEUK 이거는 필터링 거치지 않은 COM update data고, 먼가 여기서 필터링을 잔뜩 거쳐서 제어기에 집어넣은 것 같이 보임.
+                                                            // 급격한 COM 변화를 방지하고자 하는 목적이라면 필터 다 빼고, 차라리 gamma를 조절하는게 낫지 싶음. 따라서 past_com_hat을 최종 com으로 삼도록 함.
 
     constrain_vector3_components(past_com_hat);
 
@@ -182,12 +183,6 @@ void dob_based_com_estimator(float dt, matrix::Vector3f torque_dhat, matrix::Vec
         com_buffer_filled = true;
     }
 
-    /*
-    b_F_X_mat(0,0) = 0.f;                   b_F_X_mat(0,1) = -body_force_desired(2);        b_F_X_mat(0,2) = body_force_desired(1);
-    b_F_X_mat(1,0) = body_force_desired(2); b_F_X_mat(1,1) = 0.f;                           b_F_X_mat(1,2) =-body_force_desired(0);
-    b_F_X_mat(2,0) =-body_force_desired(1); b_F_X_mat(2,1) = body_force_desired(0);         b_F_X_mat(2,2) = 0.f;
-    */
-
     // 평균 및 필터링 수행
     com_target_fixed = compute_average_com();
 
@@ -199,22 +194,22 @@ void dob_based_com_estimator(float dt, matrix::Vector3f torque_dhat, matrix::Vec
 
 
     com_log.present_com_hat[0] = com_update_filtered(0); // after filtering
-    com_log.present_com_hat[1] = com_update_filtered(1);
+    com_log.present_com_hat[1] = com_update_filtered(1); // SEUK 왜있는지 모르겠음
     com_log.present_com_hat[2] = com_update_filtered(2);
 
     com_log.past_com_hat[0] = past_com_hat(0); // before filtering
-    com_log.past_com_hat[1] = past_com_hat(1);
+    com_log.past_com_hat[1] = past_com_hat(1); // SEUK 왜있는지 모르겠음
     com_log.past_com_hat[2] = past_com_hat(2);
 
     com_log.com_tilde[0] = com_hat_tilde(0); // present_com_hat - com_update
-    com_log.com_tilde[1] = com_hat_tilde(1);
+    com_log.com_tilde[1] = com_hat_tilde(1);    // SEUK 왜있는지 모르겠음
     com_log.com_tilde[2] = com_hat_tilde(2);
 
 
 
-    com_log.com_update[0] = com_update(0); // for update on control allocator matrix
-    com_log.com_update[1] = com_update(1);
-    com_log.com_update[2] = com_update(2);
+    com_log.com_update[0] = past_com_hat(0); // for update on control allocator matrix
+    com_log.com_update[1] = past_com_hat(1);    // SEUK 정말 마음에 안들지만 일단 이게 COM update 결과 publisher 부분임.
+    com_log.com_update[2] = past_com_hat(2);
 
 
 }
