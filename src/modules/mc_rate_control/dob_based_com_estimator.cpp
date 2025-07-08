@@ -35,8 +35,8 @@ static constexpr float com_update_to_target_step = 0.00005f; // com_update가 co
 
 
 // LPF 계수 (2초 정도 시간 상수)
-static constexpr float com_update_alpha = 0.01f; // 작은 값일수록 느리게 수렴
-static constexpr float com_update_alpha2 = 0.001f;
+static constexpr float com_update_alpha = 0.02f; // 작은 값일수록 느리게 수렴
+static constexpr float com_update_alpha2 = 0.002f;
 // 활성 상태 flag 및 동적 타겟 값
 //static bool com_active_flag = false;
 static matrix::Vector3f com_active_target = {};
@@ -87,7 +87,7 @@ matrix::Vector3f com_hat_dot;
 
 float root2_est = sqrtf(2.0f);
 float torque_dob_fc_est = 4.0f; //origin :: 10
-float est_gamma = 0.0001; // estimator gain : origin -> 0.0003f
+float est_gamma = 0.0001; // estimator gain : origin -> 0.0001f
 float control_hz = 665; //[hz]
 float k = 1.f/0.8f; // voltage drop gain
 float Jxx_est = 0.23f; // 0.25
@@ -207,9 +207,9 @@ void dob_based_com_estimator(float dt, matrix::Vector3f torque_dhat, matrix::Vec
 
 
 
-    com_log.com_update[0] = past_com_hat(0); // for update on control allocator matrix
-    com_log.com_update[1] = past_com_hat(1);    // SEUK 정말 마음에 안들지만 일단 이게 COM update 결과 publisher 부분임.
-    com_log.com_update[2] = past_com_hat(2);
+    com_log.com_update[0] = com_update(0); // for update on control allocator matrix
+    com_log.com_update[1] = com_update(1);    // SEUK 정말 마음에 안들지만 일단 이게 COM update 결과 publisher 부분임.
+    com_log.com_update[2] = com_update(2);
 
 
 }

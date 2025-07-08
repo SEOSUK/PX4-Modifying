@@ -134,7 +134,7 @@ void PositionControl::setInputSetpoint(const matrix::Vector4f &pose_setpoint)
 	_pos_sp(0) = pose_setpoint(0);
 	_pos_sp(1) = pose_setpoint(1);
 	_pos_sp(2) = pose_setpoint(2);
-		
+
 	_yaw_sp = pose_setpoint(3);
 	_yawspeed_sp = 0.f;
 }
@@ -144,7 +144,7 @@ bool PositionControl::update(const float dt, bool arm_flag, bool pos_flag)
 	bool valid = _inputValid();
 
 	if (valid && arm_flag) {
-		
+
 		_positionControl();
 		_velocityControl(dt);
 
@@ -156,7 +156,7 @@ bool PositionControl::update(const float dt, bool arm_flag, bool pos_flag)
 	if(!arm_flag){
 
 		// FOR SAFETY FLIGHT
-		
+
 		_vel_sp = {0.f, 0.f, 0.f};
 		_acc_sp = {0.f, 0.f, 0.f};
 		_thr_sp = {0.f, 0.f, 0.f};
@@ -166,7 +166,7 @@ bool PositionControl::update(const float dt, bool arm_flag, bool pos_flag)
 	if(!pos_flag){
 		_vel_sp(0) = 0.f;
 		_vel_sp(1) = 0.f;
-		
+
 		_acc_sp(0) = 0.f;
 		_acc_sp(1) = 0.f;
 
@@ -203,7 +203,7 @@ void PositionControl::_positionControl()
 	//ControlMath::addIfNotNanVector3f(_vel_sp, vel_sp_position); //custom
 	// make sure there are no NAN elements for further reference while constraining
 	//ControlMath::setZeroIfNanVector3f(vel_sp_position);
-	
+
 	// Constrain horizontal velocity by prioritizing the velocity component along the
 	// the desired position setpoint over the feed-forward term.
 	_vel_sp(0) = math::constrain(vel_sp_position(0), -_lim_vel_horizontal, _lim_vel_horizontal);
@@ -229,28 +229,28 @@ void PositionControl::_velocityControl(const float dt) // 사실상 여기가 �
 	// PID velocity control
 	// Vector3f gravity = {0.0, 0.0, -9.81};
 	Vector3f vel_error =  _w2b*(_vel_sp - _vel); //_w2b
-	
+
 	//_pos_sp = vel_error;
-	
+
 	// Vector3f zero3{0, 0, 0};
 	// Vector3f acc_sp_velocity = vel_error.emult(_gain_vel_p) + _vel_int - _vel_dot.emult(_gain_vel_d);
 	// Vector3f acc_sp_velocity = vel_error.emult(_gain_vel_p) - _vel_dot.emult(_gain_vel_d);
 	Vector3f acc_sp_velocity;
-	
+
 	acc_sp_velocity(0) = vel_error(0)*(static_cast<float>(1.0001)) - _vel_dot(0)*(static_cast<float>(0.0));
 	acc_sp_velocity(1) = vel_error(1)*(static_cast<float>(1.0001)) - _vel_dot(1)*(static_cast<float>(0.0));
 	acc_sp_velocity(2) = vel_error(2)*(static_cast<float>(0.1)) - _vel_dot(2)*(static_cast<float>(0.02));
-	
-	// acl xy 
+
+	// acl xy
 	// Pxy = 2.0 --> fast performance
 
-	// acl_z 
+	// acl_z
 	// Pz = 0.2, Dz = 0.01 --> good performance
-	// Pz = 0.4, Dz = 0.02 
+	// Pz = 0.4, Dz = 0.02
 
-	// No control input from setpoints or corresponding states which are NAN	
+	// No control input from setpoints or corresponding states which are NAN
 	// acc_sp_velocity가 NAN값이 아니면 _acc_sp에 값을 더해주는 함수
-	
+
 	ControlMath::addIfNotNanVector3f(_acc_sp, acc_sp_velocity);
 
 	_acc_sp(0) = acc_sp_velocity(0);
@@ -262,7 +262,7 @@ void PositionControl::_velocityControl(const float dt) // 사실상 여기가 �
 	_acc_sp(2) = math::constrain(_acc_sp(2), -_lim_acc_vertical, 0.f);
 
 	float mass = 8.f;
-	
+
 	_thr_sp(0) =  mass*_acc_sp(0);
 	_thr_sp(1) =  mass*_acc_sp(1);
 	_thr_sp(2) =  _acc_sp(2);
@@ -281,12 +281,12 @@ void PositionControl::_velocityControl(const float dt) // 사실상 여기가 �
 	// _vel_int += vel_error.emult(_gain_vel_i) * dt;
 	_vel_int(2) += vel_error(2)*_gain_vel_i(2) * dt;
 
-	
+
 	if ((_thr_sp(2) <= _lim_thr_min && vel_error(2) <= 0.f) ||
 	    (_thr_sp(2) >= _lim_thr_max && vel_error(2) >= 0.f)) {
 		vel_error(2) = 0.f;
 		}
-	
+
 	//_thr_sp(2) = -_thr_sp(2); // custom : for below contraints logic
 
 	// Prioritize vertical control while keeping a horizontal margin
@@ -298,19 +298,19 @@ void PositionControl::_velocityControl(const float dt) // 사실상 여기가 �
 
 	// Determine how much vertical thrust is left keeping horizontal margin
 	const float allocated_horizontal_thrust = math::min(thrust_sp_xy_norm, _lim_thr_xy_margin);
-	
+
 	const float thrust_z_max_squared = -(thrust_max_squared - math::sq(allocated_horizontal_thrust)); //custom
 	// 수평방향분에 할당된 thrust크기를 총 발생시킬수 있는 thrust 총합 값에서 뺴면 z 방향 thrust 여유 크기가 나옴
 
 	// Saturate maximal vertical thrust
 	//thrust_z_max_squared = 0.0;
 	_thr_sp(2) = -math::max(-_thr_sp(2), sqrtf(thrust_z_max_squared)); // Z방향 여유크기 saturation보다 크면 -> 값제한
-	
+
 	// Determine how much horizontal thrust is left after prioritizing vertical control
 	const float thrust_max_xy_squared = -(thrust_max_squared - math::sq(_thr_sp(2))); // 수직방향분 여유분 계산한 다음에 병진방향 여유분 계산
 	float thrust_max_xy = 0.f;
 	//_thr_sp.xy() = thrust_max_xy_squared;
-	
+
 	if (thrust_max_xy_squared > 0.f) {
 		thrust_max_xy = sqrtf(thrust_max_xy_squared);
 	}s
@@ -321,9 +321,9 @@ void PositionControl::_velocityControl(const float dt) // 사실상 여기가 �
 	}*/
 
 	//vel_error.xy() = -Vector2f(vel_error); //Vector2f(vel_error) - arw_gain * (acc_sp_xy - acc_limited_xy);
-		
-	
-	
+
+
+
 
 }
 
@@ -341,14 +341,14 @@ void PositionControl::_accelerationControl()
 		// Include vertical acceleration setpoint for better horizontal acceleration tracking
 		z_specific_force += _acc_sp(2); // 병진방향으로 이동하면서 발생하는 수직방향의 추력손실을 매꿔주는 텀?
 	}
-	
+
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 
 	Vector3f body_z = Vector3f(-_acc_sp(0), -_acc_sp(1), -z_specific_force).normalized(); // 좌표계를 비행좌표계로 바꾼거
 
 
-	ControlMath::limitTilt(body_z, Vector3f(0, 0, 1), _lim_tilt); 
+	ControlMath::limitTilt(body_z, Vector3f(0, 0, 1), _lim_tilt);
 
 	// NED = North-East-Down 기준 좌표계 (PX4 기본 좌표계)
 	// ned_z = "아래 방향", 즉 중력 방향 (지면 방향)

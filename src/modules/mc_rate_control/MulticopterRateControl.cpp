@@ -377,11 +377,11 @@ MulticopterRateControl::Run()
 
 			}else{
 
-				matrix::Vector3f desired_tau_PID_rpy_zero;
-				Vector3f tau_rpy_tilde_zero;
-				Vector3f _thrust_setpoint_zero;
-				Vector3f past_com_hat_zero;
-				Vector3f com_hat_tilde_zero;
+				matrix::Vector3f desired_tau_PID_rpy_zero{0.f, 0.f, 0.f};
+				Vector3f tau_rpy_tilde_zero{0.f, 0.f, 0.f};
+				Vector3f _thrust_setpoint_zero{0.f, 0.f, 0.f};
+				Vector3f past_com_hat_zero{0.f, 0.f, 0.f};
+				Vector3f com_hat_tilde_zero{0.f, 0.f, 0.f};
 
 				dob_based_com_estimator(dt, desired_tau_PID_rpy_zero,tau_rpy_tilde_zero,center_of_mass_update,past_com_hat_zero,com_hat_tilde_zero );
 
